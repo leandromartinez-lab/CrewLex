@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CrewLex</title>
+<style>
+  :root{--navy:#0e2238;--navy2:#14304d;--line:#21466b;--gold:#d4a437;--ink:#f4f1ea;--dim:#9bb0c4;--green:#6db58a;--yellow:#e8b84a;--red:#e0685f}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:#06121f;color:var(--ink);font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;line-height:1.5;display:flex;justify-content:center;-webkit-text-size-adjust:100%}
+  /* moldura de celular */
+  .phone{width:100%;max-width:412px;background:var(--navy);min-height:100vh;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.5)}
+  .statusbar{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:0.62rem;color:var(--dim);flex-shrink:0}
+  .screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 90px}
+  .screen::-webkit-scrollbar{width:0}
+
+  /* topbar */
+  .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 14px}
+  .topbar .back{background:var(--navy2);border:1px solid var(--line);color:var(--gold);width:34px;height:34px;border-radius:9px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:none;align-items:center;justify-content:center}
+  .topbar.sub .back{display:flex}
+  .logo{width:40px;height:40px;border-radius:50%;background:#f4f1ea;padding:2px;flex-shrink:0}
+  .logo img{width:100%;height:100%;border-radius:50%;display:block}
+  .topbar h1{font-size:1.15rem;font-weight:600;letter-spacing:-0.5px}
+  .topbar h1 .x{color:var(--gold)}
+  .topbar .ttl{font-size:0.95rem;font-weight:600}
+  .topbar .sb{font-size:0.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+
+  .views{position:relative}
+  .view{display:none;animation:fade .25s}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* HOME */
+  .hero{background:linear-gradient(135deg,var(--navy2),#10283f);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  .hero .greet{font-size:0.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .hero .head{font-size:1.05rem;margin-top:6px;line-height:1.4}
+  .hero .head b{color:var(--gold)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tile{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:16px 14px;cursor:pointer;transition:.15s;text-align:left;min-height:118px;display:flex;flex-direction:column;justify-content:space-between}
+  .tile:active{transform:scale(.97);border-color:var(--gold)}
+  .tile .ic{font-size:1.7rem}
+  .tile .tn{font-size:0.9rem;font-weight:600;margin-top:10px}
+  .tile .td{font-size:0.66rem;color:var(--dim);margin-top:3px;line-height:1.4}
+  .tile.wide{grid-column:1/3;flex-direction:row;align-items:center;gap:14px;min-height:auto}
+  .tile.wide .ic{font-size:1.5rem}
+  .tile.wide .tx{flex:1}
+  .tile.wide .tn{margin-top:0}
+  .tile.gold{background:linear-gradient(135deg,#d4a437,#c2922c);border-color:#d4a437}
+  .tile.gold .tn,.tile.gold .ic{color:var(--navy)}
+  .tile.gold .td{color:rgba(14,34,56,.7)}
+
+  .sectitle{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:8px}
+  .sectitle::before{content:"";width:5px;height:5px;background:var(--gold);border-radius:50%}
+
+  /* botão padrão */
+  .btn{background:var(--gold);color:var(--navy);border:none;font-family:inherit;font-weight:600;font-size:0.84rem;padding:12px 18px;border-radius:10px;cursor:pointer;width:100%;letter-spacing:0.3px}
+  .btn:disabled{opacity:.35}
+  .btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+  .btns{display:flex;gap:10px;margin-top:8px}
+
+  .panel{background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:13px}
+  .ph{font-size:0.64rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+  .ph::before{content:"";width:5px;height:5px;background:var(--gold);border-radius:50%}
+  label{display:block;font-size:0.62rem;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+  input,select{width:100%;background:var(--navy);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:0.9rem;padding:10px;border-radius:8px}
+  input:focus,select:focus{outline:none;border-color:var(--gold)}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+
+  /* upload */
+  .drop{border:2px dashed var(--line);border-radius:12px;padding:30px 16px;text-align:center;cursor:pointer}
+  .drop:active{border-color:var(--gold)}
+  .drop .ic{font-size:2rem;margin-bottom:7px}
+  .drop .t{font-size:0.9rem} .drop .d{font-size:0.68rem;color:var(--dim);margin-top:3px}
+  .or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:0.66rem;margin:13px 0}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+  .choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .choice button{background:var(--navy);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:0.74rem;padding:13px;border-radius:10px;cursor:pointer;line-height:1.4}
+  .choice button:active{border-color:var(--gold)}
+  .lgpd{font-size:0.66rem;color:var(--dim);margin-top:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+  .lgpd input{margin-top:3px;width:auto}
+  .lgpd b{color:var(--ink)}
+
+  .scan{position:relative;background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:0.72rem;color:var(--dim);overflow:hidden;min-height:120px}
+  .scanline{position:absolute;left:0;right:0;height:2px;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:scanmove 1.4s ease-in-out infinite}
+  @keyframes scanmove{0%{top:8%}50%{top:88%}100%{top:8%}}
+  .scan .ln{opacity:0;animation:appear .4s forwards;margin-bottom:3px}
+  .scan .ln:nth-child(2){animation-delay:.3s}.scan .ln:nth-child(3){animation-delay:.6s}
+  .scan .ln:nth-child(4){animation-delay:.9s}.scan .ln:nth-child(5){animation-delay:1.2s}
+  @keyframes appear{to{opacity:1}}
+  .confnote{font-size:0.7rem;color:var(--yellow);margin-bottom:11px;line-height:1.5}
+  .extracted{border-left:3px solid var(--yellow);padding-left:11px}
+
+  /* HUD + cards laudo */
+  .hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}
+  .hud .cell{background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:9px;text-align:center}
+  .hud .k{font-size:0.55rem;color:var(--dim);text-transform:uppercase}
+  .hud .v{font-size:1.1rem;font-weight:600;margin-top:2px}
+  .v.bad{color:var(--red)}.v.warn{color:var(--yellow)}.v.ok{color:var(--green)}
+  .card{border-left:3px solid var(--line);background:var(--navy);border-radius:0 9px 9px 0;padding:11px 13px;margin-bottom:9px}
+  .card.ok{border-left-color:var(--green)}.card.warn{border-left-color:var(--yellow)}.card.bad{border-left-color:var(--red)}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card .nm{font-size:0.85rem;font-weight:600}
+  .card .vd{font-size:0.62rem;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+  .vd.ok{color:var(--green)}.vd.warn{color:var(--yellow)}.vd.bad{color:var(--red)}
+  .card .dt{font-size:0.74rem;color:var(--dim);margin-top:5px}
+  .card .dt b{color:var(--ink)}
+  .fund{font-size:0.7rem;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .fund .l{color:var(--dim);text-transform:uppercase;font-size:0.56rem;letter-spacing:.5px}
+  .fund .s{color:var(--gold)}
+  .conf{display:inline-block;font-size:0.54rem;padding:1px 6px;border-radius:3px;margin-left:5px}
+  .conf.alta{background:var(--green);color:var(--navy)}.conf.media{background:var(--yellow);color:var(--navy)}
+
+  /* chat consultar */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+  .chip{background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.66rem;padding:7px 11px;border-radius:14px;cursor:pointer}
+  .chip:active{border-color:var(--gold);color:var(--gold)}
+  .thread{display:flex;flex-direction:column;gap:11px;margin-bottom:8px}
+  .msg{max-width:94%}
+  .msg.u{align-self:flex-end}
+  .msg.u .bub{background:var(--gold);color:var(--navy);border-radius:12px 12px 2px 12px;padding:9px 13px;font-size:0.82rem;font-weight:500}
+  .msg.a{align-self:flex-start;width:100%}
+  .ans{background:var(--navy2);border:1px solid var(--line);border-radius:2px 12px 12px 12px;overflow:hidden}
+  .ans .vbar{padding:8px 13px;font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;display:flex;justify-content:space-between;align-items:center;border-left:4px solid var(--line)}
+  .ans.ok .vbar{border-left-color:var(--green)}.ans.warn .vbar{border-left-color:var(--yellow)}.ans.bad .vbar{border-left-color:var(--red)}
+  .vbar .vl{color:var(--dim);font-size:0.56rem}
+  .vbar .vv.ok{color:var(--green)}.vbar .vv.warn{color:var(--yellow)}.vbar .vv.bad{color:var(--red)}
+  .ans .tx{padding:0 13px 10px;font-size:0.8rem}
+  .ans .tx b{color:var(--gold)}
+  .meta{margin:0 13px 12px;padding-top:9px;border-top:1px dashed var(--line);font-size:0.68rem}
+  .meta .r{display:flex;gap:8px;margin-bottom:3px}
+  .meta .l{color:var(--dim);text-transform:uppercase;font-size:0.54rem;letter-spacing:.5px;min-width:72px;flex-shrink:0;padding-top:2px}
+  .meta .v{color:var(--ink)} .meta .v.s{color:var(--gold)}
+  .obs{font-size:0.68rem;color:var(--dim);font-style:italic;margin-top:4px}
+  .ask{display:flex;gap:8px;margin-top:6px}
+  .ask input{flex:1}
+  .ask button{background:var(--gold);color:var(--navy);border:none;border-radius:10px;padding:0 16px;font-size:0.95rem;cursor:pointer;font-family:inherit;font-weight:600}
+  .empty{text-align:center;color:var(--dim);font-size:0.76rem;padding:20px 12px;line-height:1.6}
+  .empty b{color:var(--ink)}
+
+  .disc{font-size:0.6rem;color:var(--dim);margin-top:12px;padding:11px;border:1px dashed var(--line);border-radius:8px;line-height:1.6}
+  .listitem{background:var(--navy2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:9px;font-size:0.78rem}
+  .listitem .li-t{font-weight:600;color:var(--gold);margin-bottom:3px}
+  .listitem .li-d{font-size:0.7rem;color:var(--dim);line-height:1.5}
+
+  /* tabbar */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:64px;background:var(--navy2);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)}
+  .tab{background:none;border:none;color:var(--dim);font-family:inherit;font-size:0.56rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:6px 0;text-transform:uppercase;letter-spacing:.5px}
+  .tab .ti{font-size:1.25rem;line-height:1}
+  .tab.active{color:var(--gold)}
+  .pf{font-size:0.78rem;line-height:1.7}
+  .pf .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+  .pf .row .k{color:var(--dim)} .pf .row .v{color:var(--ink);font-weight:600}
+  .pl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  .pl-btn{border:1px solid var(--line);border-radius:11px;padding:14px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;background:var(--navy2);transition:.15s}
+  .pl-btn:active{transform:scale(.96)}
+  .pl-btn .pl-co{font-size:0.92rem;font-weight:700;letter-spacing:0.5px}
+  .pl-btn .pl-lb{font-size:0.58rem;color:var(--dim)}
+  .pl-btn.gol{border-color:#f47216} .pl-btn.gol .pl-co{color:#f47216}
+  .pl-btn.latam{border-color:#e60012} .pl-btn.latam .pl-co{color:#ec3a4a}
+  .pl-btn.azul{border-color:#00a3e0} .pl-btn.azul .pl-co{color:#00a3e0}
+  .pl-hint{font-size:0.62rem;color:var(--dim);margin-top:9px;line-height:1.7;background:var(--navy);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+  .pl-hint b{color:var(--ink)}
+  .seg{display:flex;gap:6px;margin-bottom:4px}
+  .seg button{flex:1;background:var(--navy);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.74rem;padding:9px 4px;border-radius:8px;cursor:pointer;transition:.12s}
+  .seg button.sel{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:600}
+  .seg-lbl{font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:11px 0 5px}
+  .read-card{background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .read-card .rl{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+  .read-card .rv{font-size:1.05rem;font-weight:600;color:var(--ink)}
+  .read-card input{width:108px;text-align:right;font-size:1rem;background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:4px 2px;color:var(--gold)}
+  .read-card input:focus{border-bottom-color:var(--gold)}
+  .read-hd{font-size:0.62rem;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+  .read-hd::before{content:"✓";color:var(--green)}
+  /* ===== FADIGA (aba) ===== */
+  .lt-tabs{display:flex;gap:8px;margin:2px 0 14px}
+  .lt{flex:1;background:var(--navy2);border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:10px;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:.15s}
+  .lt:active{transform:scale(.97)}
+  .lt.active{border-color:var(--gold);color:var(--gold);background:#10283f}
+  .fad-big{display:flex;align-items:center;gap:14px;background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .fad-num{font-size:2.3rem;font-weight:700;line-height:1}
+  .fad-bar{height:12px;border-radius:6px;position:relative;margin:9px 0 3px;background:linear-gradient(90deg,var(--red) 0%,var(--red) 65%,var(--yellow) 65%,var(--yellow) 77.5%,var(--green) 77.5%,var(--green) 100%)}
+  .fad-mark{position:absolute;top:-4px;width:4px;height:20px;background:var(--ink);border-radius:2px;box-shadow:0 0 5px #000}
+  .fad-row{display:flex;gap:8px;margin-bottom:10px}
+  .fad-cell{flex:1;background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:9px 6px;text-align:center}
+  .fad-cell .l{font-size:0.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;line-height:1.3}
+  .fad-cell .v{font-size:1.35rem;font-weight:700;margin-top:4px}
+  .fad-flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .fad-flag{font-size:0.62rem;padding:4px 8px;border-radius:7px;background:rgba(224,104,95,.13);border:1px solid rgba(224,104,95,.4);color:#f0a9a2}
+  .fad-flag.w{background:rgba(232,184,74,.12);border-color:rgba(232,184,74,.4);color:#e8cd86}  .pn-cats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+  .pn-cat{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:14px 12px;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:.15s}
+  .pn-cat:active{transform:scale(.97);border-color:var(--gold)}
+  .pn-cat .pe{font-size:1.25rem;line-height:1}
+  .pn-loc{background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;font-size:0.74rem;color:var(--dim);line-height:1.5}
+  .pn-loc b{color:var(--green)}
+  .pn-input{width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:11px 12px;color:var(--ink);font-family:inherit;font-size:0.85rem;margin-bottom:8px}
+  .pn-input:focus{border-color:var(--gold);outline:none}
+</style></head><body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>CrewLex ▴</span><span>100%</span></div>
+
+  <div class="screen" id="screen">
+    <div class="topbar" id="topbar">
+      <button class="back" onclick="go('home')">‹</button>
+      <div class="logo" id="logoSlot"><img src="data:image/png;base64,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"></div>
+      <div id="titleSlot"><h1>Crew<span class="x">Lex</span></h1><div class="sb">assistente do aeronauta</div></div>
+    </div>
+
+    <div class="views">
+      <!-- HOME -->
+      <div class="view on" id="v-home">
+        <div class="hero">
+          <div class="greet">Bem-vindo, tripulante</div>
+          <div class="head">O que você precisa <b>resolver agora?</b></div>
+        </div>
+        <div class="grid">
+          <button class="tile gold" onclick="go('conferir')">
+            <div class="ic">🛫</div>
+            <div><div class="tn">Conferir escala</div><div class="td">Suba o PDF ou um print e veja as não conformidades</div></div>
+          </button>
+          <button class="tile" onclick="go('consultar')">
+            <div class="ic">⚖️</div>
+            <div><div class="tn">Perguntar</div><div class="td">Tire dúvidas com base na legislação</div></div>
+          </button>
+          <button class="tile" onclick="go('motor')">
+            <div class="ic">🧮</div>
+            <div><div class="tn">Calcular jornada</div><div class="td">Jornada, repouso e limites na mão</div></div>
+          </button>
+          <button class="tile" onclick="go('ferramentas')">
+            <div class="ic">🧰</div>
+            <div><div class="tn">Ferramentas</div><div class="td">Soma de horas, passe livre, ANAC, voos</div></div>
+          </button>
+        </div>
+        <div class="sectitle">Análise de fadiga</div>
+        <button class="tile wide gold" onclick="cfWantFad=true;go('conferir')">
+          <div class="ic">🌙</div><div class="tx"><div class="tn">Analisar fadiga da escala</div><div class="td">Alerta previsto nas decolagens e pousos — ao lado da conformidade</div></div>
+        </button>
+        <div class="sectitle">No pernoite</div>
+        <button class="tile wide" onclick="go('pernoite')">
+          <div class="ic">📍</div><div class="tx"><div class="tn">Pernoite — o que tem por perto</div><div class="td">Comer, mercado, farmácia e café perto de você ou da cidade da escala</div></div>
+        </button>
+        <div class="sectitle">Atalhos do dia a dia</div>
+        <div class="grid">
+          <button class="tile wide" onclick="go('consultar');setTimeout(()=>answer(0),150)">
+            <div class="ic">📅</div><div class="tx"><div class="tn">Folga empurrada</div><div class="td">A empresa tem que pagar?</div></div>
+          </button>
+          <button class="tile wide" onclick="go('consultar');setTimeout(()=>answer(1),150)">
+            <div class="ic">🏨</div><div class="tx"><div class="tn">Hotel no pernoite</div><div class="td">Tenho direito fora da base?</div></div>
+          </button>
+          <button class="tile wide" onclick="go('consultar');setTimeout(()=>answer(3),150)">
+            <div class="ic">📞</div><div class="tx"><div class="tn">Sobreaviso sem acionamento</div><div class="td">Quanto de repouso eu tenho?</div></div>
+          </button>
+        </div>
+        <div class="sectitle">Sobre</div>
+        <button class="tile wide" onclick="go('fontes')">
+          <div class="ic">📚</div><div class="tx"><div class="tn">De onde vêm as respostas</div><div class="td">As fontes que o CrewLex consulta</div></div>
+        </button>
+        <div class="disc">CrewLex · protótipo navegável. As respostas citam a fonte. Não substitui a escala oficial nem orientação jurídica/sindical.</div>
+      </div>
+
+      <!-- CONFERIR -->
+      <div class="view" id="v-conferir">
+        <div id="cf-stage"></div>
+      </div>
+
+      <!-- CONSULTAR -->
+      <div class="view" id="v-consultar">
+        <div class="chips" id="chips"></div>
+        <div class="thread" id="thread">
+          <div class="empty" id="empty">Toque numa pergunta ou digite a sua.<br><b>O CrewLex responde citando a fonte.</b></div>
+        </div>
+        <div class="ask">
+          <input id="inp" placeholder="Pergunte sobre escala, hotel, folga…" onkeydown="if(event.key==='Enter')ask()">
+          <button onclick="ask()">→</button>
+        </div>
+      </div>
+
+      <!-- MOTOR -->
+      <div class="view" id="v-motor">
+        <div class="panel">
+          <div class="ph">Dados da jornada</div>
+          <div class="frow">
+            <div><label>Tripulação</label><select id="m_trip"><option value="simples">Simples</option><option value="composta">Composta</option><option value="revezamento">Revezamento</option></select></div>
+            <div><label>Origem</label><select id="m_origin"><option value="base">Base</option><option value="fora">Fora da base</option><option value="sobreaviso">Após sobreaviso</option></select></div>
+          </div>
+          <div class="frow">
+            <div><label>Data (opcional)</label><input id="m_data" type="date"></div>
+            <div><label>Pousos / etapas</label><input id="m_pousos" type="number" min="1" max="9" value="4"></div>
+          </div>
+          <div class="frow">
+            <div><label>Apresentação</label><input id="m_apres" type="time" value="05:30"></div>
+            <div><label>Corte motores</label><input id="m_corte" type="time" value="14:10"></div>
+          </div>
+          <button class="btn" onclick="runMotor()">Calcular</button>
+        </div>
+        <div id="m-out"></div>
+      </div>
+
+      <!-- FONTES -->
+      <div class="view" id="v-fontes">
+        <div class="disc" style="margin-top:0;margin-bottom:14px">Toda resposta do CrewLex aponta a origem. Estas são as camadas que ele consulta, na ordem de hierarquia.</div>
+        <div class="listitem"><div class="li-t">Lei do Aeronauta (13.475/2017)</div><div class="li-d">O piso. Jornada, repouso, folgas, sobreaviso, madrugadas.</div></div>
+        <div class="listitem"><div class="li-t">RBAC 117 (ANAC) — Apêndices A e B</div><div class="li-d">Limites técnicos de segurança e fadiga. Prevalece sobre a Lei em segurança.</div></div>
+        <div class="listitem"><div class="li-t">CCT 25/26 (SNA/SNEA)</div><div class="li-d">Convenção nacional. Prevalece sobre Lei e RBAC nos temas trabalhistas.</div></div>
+        <div class="listitem"><div class="li-t">ACT da sua empresa</div><div class="li-d">Gol, Latam, Azul. Mais específico — prevalece sobre a CCT quando existe.</div></div>
+        <div class="listitem"><div class="li-t">CLT + FAQ Jurídico SNA</div><div class="li-d">Base subsidiária e orientações sindicais para o dia a dia.</div></div>
+        <div class="disc">Regra-mãe (FAQ SNA, P.51): RBAC &gt; Lei; CCT &gt; ambos. O CrewLex refina pela natureza: segurança = mais restritivo; trabalhista = mais favorável a você.</div>
+      </div>
+
+      <!-- FERRAMENTAS -->
+      <div class="view" id="v-ferramentas">
+        <div class="ph" style="margin-bottom:10px">Soma de horas</div>
+        <div class="panel">
+          <div style="font-size:0.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Some ou subtraia tempos em HH:MM (ex.: 4:20 + 3:55). Use sinal de menos para subtrair (ex.: -1:30). Aceita decimal (1.5 = 1:30).</div>
+          <div id="hm-rows">
+            <div class="frow" style="grid-template-columns:1fr auto;margin-bottom:8px;align-items:center">
+              <input class="hm" placeholder="0:00" inputmode="text">
+              <button onclick="this.parentElement.remove();sumHM()" style="background:var(--navy);border:1px solid var(--line);color:var(--red);border-radius:8px;padding:9px 12px;cursor:pointer;font-family:inherit">×</button>
+            </div>
+            <div class="frow" style="grid-template-columns:1fr auto;margin-bottom:8px;align-items:center">
+              <input class="hm" placeholder="0:00" inputmode="text">
+              <button onclick="this.parentElement.remove();sumHM()" style="background:var(--navy);border:1px solid var(--line);color:var(--red);border-radius:8px;padding:9px 12px;cursor:pointer;font-family:inherit">×</button>
+            </div>
+          </div>
+          <div class="btns" style="margin-bottom:12px">
+            <button class="btn ghost" onclick="addHM()">+ linha</button>
+            <button class="btn" onclick="sumHM()">Somar</button>
+          </div>
+          <div style="background:var(--navy);border:1px solid var(--gold);border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:0.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px">Total</div>
+            <div id="hm-total" style="font-size:1.8rem;font-weight:600;color:var(--gold);margin-top:3px">0:00</div>
+            <div id="hm-dec" style="font-size:0.62rem;color:var(--dim);margin-top:2px"></div>
+          </div>
+        </div>
+
+        <div class="ph" style="margin:18px 0 10px">Voltar pra casa · painéis de voo</div>
+        <div class="listitem" onclick="ext('https://www.gru.com.br/pt/passageiro/voos/chegadas-e-partidas')" style="cursor:pointer"><div class="li-t">🛬 GRU · Guarulhos — chegadas e partidas ›</div><div class="li-d">Painel oficial do GRU Airport, status em tempo real</div></div>
+        <div class="listitem" onclick="ext('https://www.aenabrasil.com.br/pt/aeroportos/aeroporto-de-congonhas/informacoes-de-voos.html')" style="cursor:pointer"><div class="li-t">🛬 CGH · Congonhas — informações de voos ›</div><div class="li-d">Painel oficial Aena Brasil, status em tempo real</div></div>
+        <div class="disc" style="margin-top:8px">Os painéis abrem nos sites oficiais (GRU Airport e Aena). Portão e status saem direto da fonte do aeroporto. No futuro, com integração de dados, esses voos poderão aparecer dentro do próprio CrewLex.</div>
+
+        <div class="ph" style="margin:18px 0 10px">Cadê o meu avião · rastrear aeronave</div>
+        <div class="panel">
+          <div style="font-size:0.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Digite a <b style="color:var(--ink)">matrícula</b> (ex.: PR-GTA) ou o <b style="color:var(--ink)">número do voo</b> (ex.: G31234) e veja onde a aeronave está agora, o tipo e a posição — direto no FlightRadar24.</div>
+          <input class="pn-input" id="ac-q" placeholder="Matrícula ou número do voo" style="text-transform:uppercase">
+          <div class="btns" style="margin-top:2px">
+            <button class="btn" onclick="acTrack('reg')">📡 Pela matrícula</button>
+            <button class="btn" onclick="acTrack('flight')">✈️ Pelo voo</button>
+          </div>
+          <div class="listitem" onclick="acFicha()" style="cursor:pointer;margin-top:10px"><div class="li-t">🛩️ Tipo e ficha da aeronave (Planespotters) ›</div><div class="li-d">Modelo, idade, histórico e fotos pela matrícula</div></div>
+        </div>
+        <div class="disc">Abre no FlightRadar24 e no Planespotters, direto da fonte. Bom pra saber se o avião que vem pra você está atrasado ou ainda em outro aeroporto.</div>
+
+        <div class="ph" style="margin:18px 0 10px">Passe livre</div>
+        <div class="pl-grid">
+          <button class="pl-btn gol" onclick="ext('https://passelivre.voegol.com.br/')"><span class="pl-co">GOL</span><span class="pl-lb">Passe Livre ›</span></button>
+          <button class="pl-btn latam" onclick="ext('https://passelivre.latam.com/')"><span class="pl-co">LATAM</span><span class="pl-lb">Passe Livre ›</span></button>
+          <button class="pl-btn azul" onclick="ext('https://apps.voeazul.com.br/passelivreintegrado')"><span class="pl-co">AZUL</span><span class="pl-lb">Passe Livre ›</span></button>
+        </div>
+        <div class="pl-hint">
+          <div><b>Gol:</b> login = CPF · senha = código ANAC</div>
+          <div><b>Latam:</b> login = código ANAC · senha = CPF</div>
+          <div><b>Azul:</b> login = CPF · senha = código ANAC</div>
+        </div>
+        <div class="listitem" onclick="ext('https://www.aeronautas.org.br/passe-livre/')" style="cursor:pointer;margin-top:9px"><div class="li-t">📘 Guia completo do SNA ›</div><div class="li-d">Procedimento de todas as empresas e canais de contingência</div></div>
+
+        <div class="ph" style="margin:18px 0 10px">Interline · lotação e reservas (non-rev)</div>
+        <div class="listitem" onclick="ext('https://stafftraveler.com/')" style="cursor:pointer"><div class="li-t">📊 StaffTraveler — lotação dos voos ›</div><div class="li-d">Comunidade de tripulantes informa assentos livres e pax em standby</div></div>
+        <div class="listitem" onclick="ext('https://www.myidtravel.com/')" style="cursor:pointer"><div class="li-t">🎫 myIDTravel — reserva interline ›</div><div class="li-d">Listagem e standby em outras companhias (login da sua empresa)</div></div>
+        <div class="listitem" onclick="ext('https://www.id90travel.com/')" style="cursor:pointer"><div class="li-t">🏨 ID90 Travel — tarifas e hotéis de tripulante ›</div><div class="li-d">Passagens com desconto e hospedagem para staff</div></div>
+        <div class="disc">A lotação de voo <b style="color:var(--ink)">não é informação pública</b> — ela mora nos sistemas de reserva das empresas. Por isso o StaffTraveler funciona na base da comunidade: cada um informa o que vê no sistema da própria companhia. O CrewLex aponta pra essas ferramentas em vez de refazê-las.</div>
+
+        <div class="ph" style="margin:18px 0 10px">Documentos</div>
+        <div class="listitem" onclick="ext('https://consultadelicencas.anac.gov.br/consultadelicencas/')" style="cursor:pointer"><div class="li-t">🪪 Habilitação ANAC ›</div><div class="li-d">Consulta com Código ANAC + CPF + data de nascimento</div></div>
+        <div class="listitem" onclick="ext('https://sistemas.anac.gov.br/NovaCHT')" style="cursor:pointer"><div class="li-t">📄 CHT Digital (ANAC) ›</div><div class="li-d">Certificado de Habilitação Técnica — login SACI</div></div>
+        <div class="listitem" onclick="ext('https://www.aeronautas.org.br/')" style="cursor:pointer"><div class="li-t">🛡️ SNA — Sindicato ›</div><div class="li-d">Carteirinha, notícias e atendimento</div></div>
+
+        <div class="disc">Os atalhos abrem os sites oficiais de cada serviço. O CrewLex <b style="color:var(--ink)">não guarda nem digita</b> seu CPF, código ANAC ou senha — você acessa direto no site de cada órgão/empresa, com segurança.</div>
+      </div>
+
+      <!-- PERNOITE -->
+      <div class="view" id="v-pernoite">
+        <div class="panel">
+          <div class="ph">📍 Pernoite — o que tem por perto</div>
+          <div class="pn-loc" id="pn-loc">Toque em “Usar minha localização” ou informe a cidade do pernoite.</div>
+          <button class="btn" style="margin-bottom:10px" onclick="pnLocate()">📍 Usar minha localização</button>
+          <input class="pn-input" id="pn-cidade" placeholder="Cidade do pernoite (ex.: Recife)">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;color:var(--dim);font-size:0.72rem;margin:2px 0 10px"><input type="checkbox" id="pn-24h" style="width:auto">só lugares abertos 24h</label>
+          <div class="pn-cats">
+            <button class="pn-cat" onclick="pnOpen('comer')"><span class="pe">🍽️</span>Comer bem</button>
+            <button class="pn-cat" onclick="pnOpen('barato')"><span class="pe">💸</span>Comer barato</button>
+            <button class="pn-cat" onclick="pnOpen('mercado')"><span class="pe">🛒</span>Mercado</button>
+            <button class="pn-cat" onclick="pnOpen('farmacia')"><span class="pe">💊</span>Farmácia</button>
+            <button class="pn-cat" onclick="pnOpen('cafe')"><span class="pe">☕</span>Café</button>
+            <button class="pn-cat" onclick="pnOpen('hospital')"><span class="pe">🏥</span>Hospital</button>
+          </div>
+          <div class="disc" style="margin-top:12px">Os lugares abrem no Google Maps, com nota e horário direto da fonte. O CrewLex <b style="color:var(--ink)">não guarda sua localização</b> — ela é usada só pra centralizar o mapa neste momento.</div>
+        </div>
+        <div class="panel">
+          <div class="ph">Descontos do tripulante</div>
+          <div class="listitem" onclick="ext('https://www.aeronautas.org.br/parcerias-sna/')" style="cursor:pointer"><div class="li-t">🛡️ Convênios do SNA ›</div><div class="li-d">Farmácias, mercados, hotéis e serviços com desconto para associados</div></div>
+          <div class="disc" style="margin-top:8px">Os descontos reais para aeronautas são negociados pelo SNA. O CrewLex aponta para lá em vez de refazer.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab active" id="tab-home" onclick="go('home')"><span class="ti">⌂</span>Início</button>
+    <button class="tab" id="tab-conferir" onclick="go('conferir')"><span class="ti">🛫</span>Escala</button>
+    <button class="tab" id="tab-consultar" onclick="go('consultar')"><span class="ti">⚖️</span>Perguntar</button>
+    <button class="tab" id="tab-ferramentas" onclick="go('ferramentas')"><span class="ti">🧰</span>Ferramentas</button>
+  </div>
+</div>
+
+<script>
+const QA=[{"q": "Mudaram minha programação e empurraram minha folga. A empresa tem que pagar?", "tags": ["folga", "indenização", "empurr", "postergad"], "verdict": "Depende de quanto atrasou", "cls": "warn", "body": "O início da folga pode ser <b>postergado em até 4 horas</b> sem indenização. Acima disso, a empresa paga <b>indenização de R$ 700,00</b>. Em casos excepcionais (meteorologia, manutenção não programada, imperiosa necessidade), o atraso pode ir até 12 horas — ultrapassado esse limite, a indenização também é devida. Devida <b>uma vez</b> por sequência de folgas agrupadas.", "src": "ACT Gol cl. 6.4 §1º e §2º", "esfera": "Trabalhista", "conf": "alta", "obs": "Na CCT 25/26 (cl. 3.4.4) o valor é R$ 732,76 — sendo Gol, vale o ACT (R$ 700,00), por ser norma específica da empresa."}, {"q": "Tenho direito a hotel nesse pernoite fora da base?", "tags": ["hotel", "pernoite", "hospedagem", "acomodação"], "verdict": "Sim, em pernoite a serviço", "cls": "ok", "body": "Pernoitando <b>fora da base contratual a serviço</b>, a empresa garante <b>acomodação individual</b> (quarto individual, banheiro privativo, condições de higiene, ruído, temperatura e luminosidade). Se aderiu à base virtual, não há hotel durante repouso/folgas lá gozados — mas pernoite na base contratual <b>entre voos</b> gera hotel, transporte e diárias.", "src": "Lei art. 47 + ACT Gol cl. 8.1 e 5.19 §11", "esfera": "Trabalhista", "conf": "alta", "obs": "Treinamento de SOLO na base não gera hotel; treinamento de VOO com apresentação para voo é jornada — e o pernoite a serviço gera direito a hotel."}, {"q": "Essa jornada de 9h40 está dentro do limite?", "tags": ["jornada", "limite", "9h", "estour"], "verdict": "Não — excede o limite", "cls": "bad", "body": "Para <b>tripulação simples</b> em serviço aéreo regular, o limite de jornada é <b>9 horas</b>. 9h40 <b>ultrapassa</b>. A hora excedente só é admissível como ampliação (art. 40), a critério do comandante e por motivo justificado, remunerada com <b>adicional de 50%</b>.", "src": "Lei art. 36 (Inc. I) + RBAC 117 Ap. A", "esfera": "Segurança + Trabalhista", "conf": "alta", "obs": "Cálculo determinístico — o número sai do motor, não de interpretação."}, {"q": "Fiquei de sobreaviso e não fui acionado. Quanto de repouso tenho?", "tags": ["sobreaviso", "repouso", "acionad"], "verdict": "12 horas", "cls": "ok", "body": "Sobreaviso <b>sem acionamento</b> dá direito a <b>repouso mínimo de 12 horas</b> antes de nova tarefa. A Lei prevê 8h (art. 43 §4º) e o RBAC 10h, mas o ACT e a CCT elevam para <b>12h</b> — prevalece o mais favorável a você.", "src": "ACT Gol cl. 5.13 §4º (CCT 25/26 cl. 3.3.11 §4º)", "esfera": "Trabalhista", "conf": "alta", "obs": "Caso clássico de sobreposição: no trabalhista vence a regra mais protetiva, não a da ANAC."}, {"q": "Posso ser escalado para uma terceira madrugada seguida?", "tags": ["madrugada", "terceira", "consecutiv"], "verdict": "Só como extra em retorno", "cls": "warn", "body": "Limite: <b>2 madrugadas/early starts consecutivos</b>, máx. <b>4 em 168h</b>. A <b>terceira</b> só é possível como <b>tripulante extra</b>, em voo de retorno à base, encerrando a jornada. O ciclo de 168h reinicia com 48h livres. Após 2 seguidas, a apresentação no 3º dia só após as 08h.", "src": "ACT Gol cl. 5.16 + Lei art. 42", "esfera": "Segurança / fadiga", "conf": "alta", "obs": "Na Gol, 'early start' (05h–07h Brasília) conta junto com madrugada. Madrugada = 0h–6h pelo corte de motores."}, {"q": "Quantos dias de licença tenho quando caso?", "tags": ["licença", "casamento", "gala", "casar"], "verdict": "5 dias consecutivos", "cls": "ok", "body": "A CLT prevê 3 dias, mas o acordo <b>ampliou para 5 dias consecutivos</b>. Licença-paternidade: 5 dias, ampliável para <b>20</b> se comunicar a chefia com 60 dias de antecedência.", "src": "ACT Gol cl. 5.6 e 5.7 (amplia CLT art. 473)", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "A empresa pode alterar minha escala sem me consultar?", "tags": ["escala", "alteração", "mudança", "consultar", "anuência"], "verdict": "Só com aviso e só atraso", "cls": "warn", "body": "Sem sua anuência, só vale se comunicada com <b>2h de antecedência</b> (na base) ou <b>1h</b> (fora da base), e desde que seja um <b>atraso</b> da apresentação — <b>nunca um adiantamento</b>.", "src": "RBAC 117 Apêndice B, item (h)", "esfera": "Segurança", "conf": "alta", "obs": "Guarde o print com horário de quando recebeu o aviso."}, {"q": "A empresa pode pôr dia em branco na escala?", "tags": ["branco", "dias", "indefinido"], "verdict": "Não é permitido", "cls": "bad", "body": "A escala deve definir início/término de voo, reserva, sobreaviso e folgas. É <b>vedado</b> consignar horários indefinidos — <b>dias em branco são proibidos</b>.", "src": "Lei art. 26, I e II", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Fui acionado na reserva para um voo. A jornada conta desde quando?", "tags": ["reserva", "acionad", "jornada", "conta"], "verdict": "Desde a apresentação da reserva", "cls": "ok", "body": "A jornada conta <b>a partir da apresentação da reserva</b>, não do voo. E você <b>não precisa</b> dos 30 min de apresentação do voo, pois já se apresentou para a reserva.", "src": "Lei art. 35 §1º", "esfera": "Segurança/Trabalhista", "conf": "alta", "obs": ""}, {"q": "Devo ser pago pela escala publicada ou pela executada?", "tags": ["pagamento", "escala", "publicada", "executada", "remuneração"], "verdict": "A que pagar mais", "cls": "ok", "body": "A empresa paga a escala que refletir a <b>maior remuneração</b> — comparando publicada e executada. Vale inclusive em dias de dispensa médica.", "src": "CCT 25/26 cl. 3.2.5", "esfera": "Trabalhista", "conf": "alta", "obs": "Guarde as duas escalas (publicada e executada)."}, {"q": "Posso ser contratado como aeronauta via PJ?", "tags": ["pj", "pessoa jurídica", "contrato"], "verdict": "Não", "cls": "bad", "body": "A função de tripulante deve ser formalizada por <b>contrato de trabalho</b> direto com o operador. Contratação via PJ não é permitida.", "src": "Lei art. 20, caput", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Entre RBAC, Lei e CCT, qual vence em conflito?", "tags": ["hierarquia", "conflito", "prevalece", "rbac", "cct", "vence"], "verdict": "CCT no topo", "cls": "ok", "body": "Pela orientação do SNA: o <b>RBAC 117 prevalece sobre a Lei</b>, e a <b>CCT prevalece sobre ambos</b>. Na prática: em segurança vence o limite mais restritivo da ANAC; em temas trabalhistas vence a norma mais favorável — geralmente a CCT ou o ACT da empresa.", "src": "FAQ Jurídico SNA, pergunta 51", "esfera": "Regra de hierarquia", "conf": "alta", "obs": "É a regra-mãe do CrewLex."}];
+const CEN={"escala": {"trip": "simples", "origin": "base", "apres": "05:30", "corte": "14:40", "pousos": 5, "madrugada": "nao"}, "print": {"trip": "simples", "origin": "sobreaviso", "apres": "04:15", "corte": "10:30", "pousos": 3, "madrugada": "sim"}};
+const TITLES={home:null,conferir:["Conferir escala","upload e laudo"],consultar:["Perguntar","com base na lei"],motor:["Calcular jornada","motor determinístico"],fontes:["Fontes","de onde vêm as respostas"],ferramentas:["Ferramentas","atalhos e cálculos"],pernoite:["Pernoite","o que tem por perto"]};
+const TABMAP={home:"tab-home",conferir:"tab-conferir",consultar:"tab-consultar",motor:"tab-home",fontes:"tab-home",ferramentas:"tab-ferramentas",pernoite:"tab-home"};
+
+/* ===== FASE 2 — backend (extração real + contribuição anônima) ===== */
+const CREWLEX_BACKEND=""; // ex.: "https://crewlex.vercel.app" — VAZIO = modo protótipo (sem backend)
+let cfFileB64=null, cfFileMime=null, cfConsentEstudo=false, cfEmpresa=null;
+
+async function crewlexExtrair(){
+  const r=await fetch(CREWLEX_BACKEND+"/api/extrair",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({imagem_base64:cfFileB64, mime:cfFileMime})});
+  if(!r.ok) throw new Error("extrair "+r.status);
+  return await r.json();
+}
+function jornadaToPre(res){
+  const js=(res&&res.jornadas)||[];
+  const j=js.find(x=>x.atividade==="voo")||js[0]||{};
+  const mad=((j.etapas||[]).some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao";
+  cfEmpresa=(res&&res.empresa)||null;
+  cfPernoiteCidade=(j.pernoite&&j.pernoite.cidade)||null;
+  return {apres:j.apresentacao||"", corte:j.corte_motores||j.fim_jornada||"", pousos:j.num_pousos||1,
+    madrugada:mad, trip:j.tipo_tripulacao||"simples", origin:"base", func:(res&&res.funcao)||"piloto", data:j.data||""};
+}
+// envia SÓ dados anônimos (sem nome, matrícula, voo ou data exata) e SÓ com opt-in
+function crewlexContribuir(d, anoMesRaw){
+  if(!CREWLEX_BACKEND || !cfConsentEstudo) return;
+  const r=fadAssess(d); if(!r) return;
+  const niv=r.lvl==="g"?"verde":(r.lvl==="y"?"amarelo":"vermelho");
+  const am=/^\d{4}-\d{2}/.test(anoMesRaw||"")?anoMesRaw.slice(0,7):null;
+  const payload={jornadas:[{empresa:cfEmpresa||null, funcao:d.func, ano_mes:am,
+    num_pousos:d.pousos, jornada_min:Math.round((r.corte-r.apres)*60),
+    madrugada:d.madrugada==="sim", alerta_min:r.minA, nivel:niv}]};
+  fetch(CREWLEX_BACKEND+"/api/contribuir",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).catch(()=>{});
+}
+
+function go(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.getElementById('v-'+v).classList.add('on');
+  // topbar
+  const tb=document.getElementById('topbar'), tt=document.getElementById('titleSlot'), ls=document.getElementById('logoSlot');
+  if(v==='home'){tb.classList.remove('sub');ls.style.display='block';tt.innerHTML='<h1>Crew<span class="x">Lex</span></h1><div class="sb">assistente do aeronauta</div>';}
+  else{tb.classList.add('sub');ls.style.display='none';const t=TITLES[v];tt.innerHTML='<div class="ttl">'+t[0]+'</div><div class="sb">'+t[1]+'</div>';}
+  // tabs
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById(TABMAP[v])?.classList.add('active');
+  document.getElementById('screen').scrollTop=0;
+  if(v==='conferir')resetConferir();
+  if(v==='pernoite')pnInit();
+}
+
+/* ===== PERNOITE (utilidade de layover) ===== */
+let pnCoords=null, cfPernoiteCidade=null;
+const PN_Q={comer:'restaurantes bem avaliados', barato:'restaurante por quilo', mercado:'supermercado', farmacia:'farmácia', cafe:'cafeteria', hospital:'hospital pronto-socorro'};
+function pnSetLoc(html){ const e=document.getElementById('pn-loc'); if(e) e.innerHTML=html; }
+function pnInit(){
+  pnCoords=null;
+  const c=document.getElementById('pn-cidade'); if(c && cfPernoiteCidade && !c.value) c.value=cfPernoiteCidade;
+  const t=document.getElementById('pn-24h'); if(t) t.checked=false;
+  pnLocate(); // tenta localizar automaticamente ao abrir a aba
+}
+function pnLocate(){
+  if(!navigator.geolocation){ pnSetLoc('Localização não disponível neste aparelho — use a cidade abaixo.'); return; }
+  pnSetLoc('Localizando…');
+  navigator.geolocation.getCurrentPosition(
+    p=>{ pnCoords={lat:p.coords.latitude,lng:p.coords.longitude}; pnSetLoc('<b>📍 Usando sua localização atual.</b> Toque numa categoria.'); },
+    ()=>{ pnCoords=null; pnSetLoc('Sem acesso à localização — informe a cidade do pernoite abaixo.'); },
+    {timeout:8000, maximumAge:300000}
+  );
+}
+function pnOpen(cat){
+  let q=PN_Q[cat]||cat;
+  const t=document.getElementById('pn-24h'); if(t && t.checked) q+=' 24 horas';
+  let url;
+  if(pnCoords){ url='https://www.google.com/maps/search/'+encodeURIComponent(q)+'/@'+pnCoords.lat+','+pnCoords.lng+',15z'; }
+  else{
+    const cidade=((document.getElementById('pn-cidade')||{}).value||'').trim();
+    if(!cidade){ alert('Use sua localização ou digite a cidade do pernoite.'); return; }
+    url='https://www.google.com/maps/search/'+encodeURIComponent(q+' em '+cidade);
+  }
+  window.open(url,'_blank');
+}
+
+/* ===== RASTREAR AERONAVE (FlightRadar24 / Planespotters) ===== */
+function acVal(){ return ((document.getElementById('ac-q')||{}).value||'').trim().replace(/\s+/g,''); }
+function acTrack(kind){
+  const v=acVal(); if(!v){ alert('Digite a matrícula (ex.: PR-GTA) ou o número do voo (ex.: G31234).'); return; }
+  const base='https://www.flightradar24.com/data/'+(kind==='reg'?'aircraft/':'flights/');
+  window.open(base+encodeURIComponent(v.toLowerCase()),'_blank');
+}
+function acFicha(){
+  const v=acVal(); if(!v){ alert('Digite a matrícula da aeronave (ex.: PR-GTA).'); return; }
+  window.open('https://www.planespotters.net/search?q='+encodeURIComponent(v),'_blank');
+}
+
+/* ===== MOTOR (núcleo determinístico) ===== */
+/* Tabela 1 RBAC 117 Apêndice B — tripulação SIMPLES — jornada máx (h) por hora de apresentação x etapas */
+const TAB1_SIMPLES=[
+  {ini:"06:00",fim:"06:59",e:[[2,11],[4,11],[5,10],[6,9],[99,9]]},
+  {ini:"07:00",fim:"07:59",e:[[2,12],[4,12],[5,11],[6,10],[99,9]]},
+  {ini:"08:00",fim:"11:59",e:[[2,12],[4,12],[5,12],[6,11],[99,10]]},
+  {ini:"12:00",fim:"13:59",e:[[2,12],[4,12],[5,11],[6,10],[99,9]]},
+  {ini:"14:00",fim:"15:59",e:[[2,11],[4,11],[5,10],[6,9],[99,9]]},
+  {ini:"16:00",fim:"17:59",e:[[2,10],[4,10],[5,9],[6,9],[99,9]]},
+  {ini:"18:00",fim:"05:59",e:[[2,9],[4,9],[5,9],[6,9],[99,9]]},
+];
+const REGRAS={repousoSob:{lei:8,rbac:10,cct:12,act:12},repousoBase:12,foraBase:1};
+function toMin(s){const[h,m]=s.split(":").map(Number);return h*60+m;}
+function fmtH(h){const s=h<0?"-":"";h=Math.abs(h);const hh=Math.floor(h),mm=Math.round((h-hh)*60);return s+hh+"h"+(mm?String(mm).padStart(2,"0"):"00");}
+function fmtData(iso){if(!iso)return "";const[a,m,dd]=iso.split("-");return dd+"/"+m;}
+let SEL={func:"piloto",trip:"simples",classe:"1",origin:"base",aclim:"aclimatado"};
+function segPick(grp,btn){
+  const map={func:"sg-func",trip:"sg-trip",classe:"sg-classe",origin:"sg-origin",aclim:"sg-aclim"};
+  SEL[grp]=btn.dataset.v;
+  document.querySelectorAll("#"+map[grp]+" button").forEach(b=>b.classList.toggle("sel",b===btn));
+  if(grp==="trip"){document.getElementById("sg-classe-wrap").style.display=(SEL.trip==="composta"||SEL.trip==="revezamento")?"block":"none";}
+}
+function syncSeg(id,val){document.querySelectorAll("#"+id+" button").forEach(b=>b.classList.toggle("sel",b.dataset.v===val));}
+
+function calc(apres,corte){let d=toMin(corte)-toMin(apres);if(d<0)d+=1440;return{durH:(d+30)/60,cruza:toMin(corte)<toMin(apres)};}
+function faixaApres(m){for(const f of TAB1_SIMPLES){const a=toMin(f.ini),b=toMin(f.fim);if(a<=b){if(m>=a&&m<=b)return f;}else{if(m>=a||m<=b)return f;}}return TAB1_SIMPLES[TAB1_SIMPLES.length-1];}
+function limiteSimples(apres,etapas){const f=faixaApres(toMin(apres));for(const[me,lim]of f.e){if(etapas<=me)return lim;}return f.e[f.e.length-1][1];}
+
+function buildLaudo(d){
+  const j=calc(d.apres,d.corte); const cards=[]; let nc=0;
+  const dataTxt = d.data ? ` <span style="color:var(--dim)">(${d.data})</span>` : "";
+
+  // JORNADA — tabela do Apêndice B p/ simples (com aclimatação); composta/revez por classe
+  let lim, baseFonte, cf="alta", faixaTxt="";
+  const fx=faixaApres(toMin(d.apres));
+  if(d.trip==="simples"){
+    lim=limiteSimples(d.apres,d.pousos);
+    faixaTxt=` Faixa de apresentação ${fx.ini}–${fx.fim}, ${d.pousos} etapa(s).`;
+    baseFonte="RBAC 117 Ap. B, Tabela 1";
+  } else {
+    // composta/revezamento por classe (Tabela 2 pilotos / Tabela 3 comissários) — faixa diurna 07-13:59 como base
+    const T={composta:{1:16,2:15,3:14},revezamento:{1:18,2:17,3:15}};
+    lim=T[d.trip][d.classe]||(d.trip==="composta"?16:18);
+    faixaTxt=` ${d.trip==="composta"?"Composta":"Revezamento"}, Classe ${d.classe}, ${d.func==="comissario"?"comissário":"piloto"}.`;
+    baseFonte="RBAC 117 Ap. B, "+(d.func==="comissario"?"Tabela 3":"Tabela 2");
+    cf="media";
+  }
+  // aclimatação: estado desconhecido subtrai 1h da jornada-limite
+  let aclimTxt="";
+  if(d.aclim==="desconhecido"){ lim=lim-1; aclimTxt=" Estado de aclimatação desconhecido: −1h no limite."; cf="media"; }
+  const marg=lim-j.durH; const cl=marg<-0.001?"bad":(marg<=.5?"warn":"ok"); if(cl==="bad")nc++;
+  cards.push({nm:"Jornada de trabalho"+dataTxt,cl,vd:cl==="bad"?"Violação":cl==="warn"?"No limite":"Conforme",
+    dt:`Apurada <b>${fmtH(j.durH)}</b> (c/ 30min pós-corte). Limite <b>${fmtH(lim)}</b>.${faixaTxt}${aclimTxt} Margem <b>${fmtH(marg)}</b>.`,
+    s:baseFonte,cf});
+
+  // POUSOS — 5 é permitido c/ +2h de repouso (não é violação automática)
+  if(d.trip==="simples"){
+    if(d.pousos<=4){cards.push({nm:"Pousos na jornada",cl:"ok",vd:"Conforme",dt:`Pousos <b>${d.pousos}</b> · limite padrão <b>4</b> (simples, Inc. I).`,s:"Lei art. 31, I",cf:"alta"});}
+    else if(d.pousos===5){cards.push({nm:"Pousos na jornada",cl:"warn",vd:"Atenção",dt:`Pousos <b>5</b>: permitido <b>a critério do empregador</b>, desde que acrescidas <b>+2h ao repouso que antecede a jornada</b>. Verifique se o repouso anterior foi ampliado.`,s:"Lei art. 31, I + FAQ SNA P.22",cf:"alta"});}
+    else{nc++;cards.push({nm:"Pousos na jornada",cl:"bad",vd:"Violação",dt:`Pousos <b>${d.pousos}</b> excede o máximo de <b>5</b> para tripulação simples.`,s:"Lei art. 31, I",cf:"alta"});}
+  }
+
+  // REPOUSO
+  let rep,src,extra="";
+  if(d.origin==="sobreaviso"){const v=REGRAS.repousoSob;rep=Math.max(v.lei,v.rbac,v.cct,v.act);src="ACT Gol cl. 5.13 §4º (supera Lei 8h / RBAC 10h)";}
+  else{rep=REGRAS.repousoBase;src="Lei art. 48";if(d.origin==="fora"){rep+=REGRAS.foraBase;extra=` (inclui +${fmtH(REGRAS.foraBase)} fora da base, ACT Gol 5.17)`;src="ACT Gol cl. 5.17";}}
+  cards.push({nm:d.origin==="sobreaviso"?"Repouso após sobreaviso":"Repouso após a jornada",cl:"ok",vd:"Devido",
+    dt:`Repouso mínimo <b>${fmtH(rep)}</b>${extra}.`,s:src,cf:"alta"});
+
+  if(d.madrugada==="sim")cards.push({nm:"Operação em madrugada",cl:"warn",vd:"Atenção",
+    dt:`Toca a faixa 00h–06h. Máx. <b>2 consecutivas</b>, <b>4 em 168h</b>. Verifique o acumulado.`,s:"ACT Gol cl. 5.16 + Lei art. 42",cf:"media"});
+  return {j,cards,nc};
+}
+function renderLaudo(d,host){
+  const {j,cards,nc}=buildLaudo(d);
+  const ncCls=nc===0?"ok":nc===1?"warn":"bad";
+  let h=`<div class="hud">
+    <div class="cell"><div class="k">Jornada</div><div class="v">${fmtH(j.durH)}</div></div>
+    <div class="cell"><div class="k">Pousos</div><div class="v">${d.pousos}</div></div>
+    <div class="cell"><div class="k">Não conf.</div><div class="v ${ncCls}">${nc}</div></div></div>`;
+  for(const c of cards)h+=`<div class="card ${c.cl}"><div class="top"><span class="nm">${c.nm}</span><span class="vd ${c.cl}">${c.vd}</span></div>
+    <div class="dt">${c.dt}</div><div class="fund"><span class="l">Fundamento:</span> <span class="s">${c.s}</span>
+    <span class="conf ${c.cf}">${c.cf==="alta"?"confiança alta":"confiança média"}</span></div></div>`;
+  h+=`<div class="disc">Números do motor determinístico. Guarde: escala publicada, alteração recebida (print c/ hora), ACARS, diário de bordo.</div>`;
+  host.innerHTML=h;
+}
+
+function runMotor(){
+  const d={trip:m_trip.value,origin:m_origin.value,apres:m_apres.value,corte:m_corte.value,pousos:parseInt(m_pousos.value)||1,madrugada:"nao",data:fmtData(m_data.value)};
+  renderLaudo(d,document.getElementById("m-out"));
+  document.getElementById("m-out").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ===== CONFERIR (fluxo) ===== */
+function resetConferir(){
+  document.getElementById("cf-stage").innerHTML=`
+    <div class="panel"><div class="ph">Enviar escala ou alteração</div>
+      <input type="file" id="cf-file" accept="application/pdf,image/*" style="display:none" onchange="cfFile(this)">
+      <div class="drop" onclick="cfOpenPicker('escala')"><div class="ic">📄</div><div class="t">Enviar escala mensal (PDF)</div><div class="d">toque para escolher o arquivo</div></div>
+      <div class="or">ou</div>
+      <div class="choice">
+        <button onclick="cfOpenPicker('print')">📸 Print de alteração<br><span style="color:var(--dim)">foto da tela</span></button>
+        <button onclick="cfOpenPicker('escala')">🗂️ Escala do mês<br><span style="color:var(--dim)">arquivo</span></button>
+      </div>
+      <div id="cf-fileinfo"></div>
+      <div class="lgpd"><input type="checkbox" id="consent"><label for="consent" style="text-transform:none;letter-spacing:0;color:var(--dim)">Autorizo o processamento só para conferência. O arquivo é analisado e <b>descartado em seguida</b> (LGPD).</label></div>
+      <div class="lgpd" style="margin-top:8px"><input type="checkbox" id="consent-estudo"><label for="consent-estudo" style="text-transform:none;letter-spacing:0;color:var(--dim)">Opcional: contribuir <b>anonimamente</b> para o estudo de fadiga das tripulações brasileiras. Guardamos só dados <b>sem identificação</b> (função, empresa, mês e métricas) — seu arquivo continua sendo descartado.</label></div>
+    </div>`;
+}
+let cfTipo='escala';
+function cfOpenPicker(tipo){
+  if(!document.getElementById("consent").checked){alert("Marque a autorização (LGPD) para continuar.");return;}
+  cfConsentEstudo=!!(document.getElementById("consent-estudo")&&document.getElementById("consent-estudo").checked);
+  cfTipo=tipo;
+  document.getElementById("cf-file").click();
+}
+function cfFile(input){
+  const f=input.files&&input.files[0];
+  if(!f)return;
+  cfFileB64=null; cfFileMime=f.type||"application/octet-stream";
+  try{ const rd=new FileReader(); rd.onload=()=>{cfFileB64=(rd.result||"").toString().split(",")[1]||null;}; rd.readAsDataURL(f); }catch(e){}
+  const kb=f.size/1024, tam = kb>1024 ? (kb/1024).toFixed(1)+" MB" : Math.round(kb)+" KB";
+  document.getElementById("cf-fileinfo").innerHTML=`<div style="background:var(--navy);border:1px solid var(--green);border-radius:9px;padding:11px 13px;margin-top:12px;font-size:0.74rem">
+    <div style="color:var(--green);font-weight:600">✓ Arquivo recebido</div>
+    <div style="color:var(--ink);margin-top:3px;word-break:break-all">${f.name}</div>
+    <div style="color:var(--dim);font-size:0.66rem">${tam}</div>
+    <button class="btn" style="margin-top:10px" onclick="cfPick(cfTipo)">Continuar para conferência</button>
+    <div style="color:var(--dim);font-size:0.62rem;margin-top:8px;line-height:1.5">A leitura automática do arquivo entra na próxima fase (IA de visão no backend). Por enquanto, na próxima tela você confere e ajusta os dados.</div>
+  </div>`;
+}
+function cfPick(tipo){
+  const st=document.getElementById("cf-stage");
+  st.innerHTML=`<div class="panel"><div class="ph">Lendo o documento</div>
+    <div class="scan"><div class="scanline"></div>
+      <div class="ln">› identificando empresa e função…</div><div class="ln">› extraindo apresentação e cortes…</div>
+      <div class="ln">› contando etapas e pousos…</div><div class="ln">› detectando madrugadas…</div>
+      <div class="ln">› preparando para sua conferência…</div></div></div>`;
+  if(CREWLEX_BACKEND && cfFileB64){
+    crewlexExtrair()
+      .then(j=>cfRenderConferencia(jornadaToPre(j), (j&&j.eh_escala===false)?"O arquivo não parece uma escala — confira/preencha manualmente.":null))
+      .catch(()=>cfRenderConferencia(CEN[tipo], "Leitura automática indisponível — confira/preencha manualmente."));
+  }else{
+    setTimeout(()=>cfRenderConferencia(CEN[tipo], null), 1700);
+  }
+}
+function cfRenderConferencia(c, aviso){
+  c=c||{};
+  const st=document.getElementById("cf-stage");
+  st.innerHTML=`<div class="panel">
+      ${aviso?`<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">${aviso}</div>`:``}
+      <div class="ph">1 · Seu contexto — toque para selecionar</div>
+      <div class="seg-lbl">Função</div>
+      <div class="seg" id="sg-func"><button data-v="piloto" class="sel" onclick="segPick('func',this)">Piloto</button><button data-v="comissario" onclick="segPick('func',this)">Comissário</button></div>
+      <div class="seg-lbl">Tipo de tripulação</div>
+      <div class="seg" id="sg-trip"><button data-v="simples" class="sel" onclick="segPick('trip',this)">Simples</button><button data-v="composta" onclick="segPick('trip',this)">Composta</button><button data-v="revezamento" onclick="segPick('trip',this)">Revezamento</button></div>
+      <div id="sg-classe-wrap" style="display:none"><div class="seg-lbl">Classe de descanso a bordo</div>
+        <div class="seg" id="sg-classe"><button data-v="1" class="sel" onclick="segPick('classe',this)">Classe 1</button><button data-v="2" onclick="segPick('classe',this)">Classe 2</button><button data-v="3" onclick="segPick('classe',this)">Classe 3</button></div></div>
+      <div class="seg-lbl">Origem da jornada</div>
+      <div class="seg" id="sg-origin"><button data-v="base" class="sel" onclick="segPick('origin',this)">Base</button><button data-v="fora" onclick="segPick('origin',this)">Fora</button><button data-v="sobreaviso" onclick="segPick('origin',this)">Sobreaviso</button></div>
+      <div class="seg-lbl">Aclimatação</div>
+      <div class="seg" id="sg-aclim"><button data-v="aclimatado" class="sel" onclick="segPick('aclim',this)">Aclimatado</button><button data-v="desconhecido" onclick="segPick('aclim',this)">Estado desconhecido</button></div>
+
+      <div class="read-hd">2 · Dados lidos da escala — confira e corrija se preciso</div>
+      <div class="confnote">⚠️ A leitura automática pode falhar. Estes valores foram lidos da sua escala — toque para corrigir se algum estiver errado.</div>
+      <div class="read-card"><span class="rl">Apresentação</span><input id="c_apres" type="time"></div>
+      <div class="read-card"><span class="rl">Corte dos motores</span><input id="c_corte" type="time"></div>
+      <div class="read-card"><span class="rl">Pousos / etapas</span><input id="c_pousos" type="number" min="1" max="9" style="width:64px"></div>
+      <div class="read-card"><span class="rl">Madrugada (00–06h)</span><select id="c_madrugada" style="width:auto;background:transparent;border:none;color:var(--gold);font-size:0.95rem"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
+      <div class="read-card"><span class="rl">Data da jornada</span><input id="c_data" type="date" style="width:150px;color:var(--gold)"></div>
+
+      <div class="btns" style="margin-top:14px"><button class="btn" onclick="cfLaudo()">Conferir agora</button><button class="btn ghost" onclick="resetConferir()">Recomeçar</button></div></div>`;
+  c_apres.value=c.apres||"";c_corte.value=c.corte||"";c_pousos.value=c.pousos||1;c_madrugada.value=c.madrugada||"nao";
+  if(c.data) c_data.value=c.data;
+  const trip=c.trip||"simples", origin=c.origin||"base", func=c.func||"piloto";
+  SEL={func:func,trip:trip,classe:"1",origin:origin,aclim:"aclimatado"};
+  syncSeg("sg-func",func);syncSeg("sg-trip",trip);syncSeg("sg-origin",origin);
+  document.getElementById("sg-classe-wrap").style.display = (trip==="composta"||trip==="revezamento")?"block":"none";
+}
+function cfLaudo(){
+  const anoMesRaw=(typeof c_data!=="undefined" && c_data)?c_data.value:"";
+  const d={func:SEL.func,trip:SEL.trip,classe:SEL.classe,aclim:SEL.aclim,origin:SEL.origin,apres:c_apres.value,corte:c_corte.value,pousos:parseInt(c_pousos.value)||1,madrugada:c_madrugada.value,data:fmtData(c_data.value)};
+  const st=document.getElementById("cf-stage");
+  st.innerHTML=`<div class="panel"><div class="ph">Análise da jornada</div>
+    <div class="lt-tabs"><button class="lt active" id="lt-conf" onclick="cfTabPick('conf')">Conformidade</button><button class="lt" id="lt-fad" onclick="cfTabPick('fad')">Fadiga</button></div>
+    <div id="cf-conf"></div>
+    <div id="cf-fad" style="display:none"></div>
+    <div class="btns" style="margin-top:6px"><button class="btn ghost" onclick="resetConferir()">Conferir outra</button></div></div>`;
+  renderLaudo(d,document.getElementById("cf-conf"));
+  renderFadiga(d,document.getElementById("cf-fad"));
+  cfTabPick(cfWantFad?'fad':'conf'); cfWantFad=false;
+  crewlexContribuir(d, anoMesRaw);
+}
+function cfTabPick(t){
+  document.getElementById("cf-conf").style.display = t==='conf'?'block':'none';
+  document.getElementById("cf-fad").style.display  = t==='fad'?'block':'none';
+  document.getElementById("lt-conf").classList.toggle('active',t==='conf');
+  document.getElementById("lt-fad").classList.toggle('active',t==='fad');
+}
+
+/* ===== FADIGA (modelo de três processos — estimativa de uma jornada) ===== */
+let cfWantFad=false;
+const FADCOL={g:'var(--green)',y:'var(--yellow)',r:'var(--red)'};
+const FADNAME={g:'baixo risco',y:'atenção',r:'alto risco'};
+const FAD_HARM=[0.97,0.22,0.07,0.03,0.001];
+function fadCirc(h){const hod=((h%24)+24)%24;let r=0;for(let i=0;i<FAD_HARM.length;i++)r+=FAD_HARM[i]*Math.cos(2*Math.PI*(i+1)*(hod-17)/24);return 9.5*(r-0.25);}
+function fadHM(s){if(!s)return null;const p=s.split(":");return (+p[0])+(+p[1])/60;}
+function fadClock(t){const x=((t%24)+24)%24;const H=Math.floor(x),M=Math.round((x-H)*60)%60;return String(H).padStart(2,"0")+":"+String(M).padStart(2,"0");}
+function fadLevel(a){return a>=77.5?'g':(a>=65?'y':'r');}
+function fadAssess(d){
+  let apres=fadHM(d.apres),corte=fadHM(d.corte);
+  if(apres==null||corte==null)return null;
+  if(corte<apres)corte+=24;                 // jornada vira meia-noite
+  const wake=Math.min(7.5,apres-1.0);        // sono noturno 23:30–07:30; acorda 1h antes se cedo
+  const sleep=Math.max(0,Math.min(8,wake-(-0.5)));
+  const Swake=Math.max(30,Math.min(100,40+sleep*7.5));
+  const A=t=>{const S=Swake*Math.exp(-Math.max(0,t-wake)/40);let inr=0;const tw=t-wake;if(tw>=0&&tw<1.5)inr=-12*Math.exp(-tw/0.5);return Math.max(0,Math.min(100,S+fadCirc(t)+inr));};
+  let minA=101,tmin=apres;for(let t=apres;t<=corte+1e-9;t+=0.25){const v=A(t);if(v<minA){minA=v;tmin=t;}}
+  return {apres,corte,sleep,aApres:A(apres),aCorte:A(corte),minA:Math.round(minA),tmin,lvl:fadLevel(minA)};
+}
+function renderFadiga(d,host){
+  const r=fadAssess(d);
+  if(!r){host.innerHTML='<div class="confnote">Preencha apresentação e corte para estimar a fadiga.</div>';return;}
+  const dur=r.corte-r.apres, am=((r.apres%24)+24)%24, cm=((r.corte%24)+24)%24;
+  let wocl=false;for(let t=r.apres;t<=r.corte;t+=0.25){const x=((t%24)+24)%24;if(x>=2&&x<6){wocl=true;break;}}
+  const flags=[];
+  if(d.madrugada==='sim'||wocl)flags.push(['Opera na madrugada (WOCL)','']);
+  if(am<6)flags.push(['Apresentação antes das 06:00','w']);
+  if(cm>=23||cm<5)flags.push(['Encerra na madrugada/noite','w']);
+  if(dur>11)flags.push(['Jornada longa ('+Math.floor(dur)+'h'+(Math.round((dur-Math.floor(dur))*60)||'')+')','w']);
+  if(d.pousos>=6)flags.push([d.pousos+' pousos','']);else if(d.pousos===5)flags.push(['5 pousos (atenção)','w']);
+  if(r.sleep<6)flags.push(['Sono estimado curto (~'+r.sleep.toFixed(1).replace('.0','')+'h)','']);
+  if(d.origin==='sobreaviso')flags.push(['Início após sobreaviso','w']);
+  const fh=flags.map(f=>`<span class="fad-flag ${f[1]}">${f[0]}</span>`).join('')||'<span class="fad-flag" style="background:rgba(155,176,196,.1);border-color:var(--line);color:var(--dim)">sem fatores de risco destacados</span>';
+  host.innerHTML=`
+    <div class="confnote">Estimativa <b>indicativa</b> (modelo de três processos: sono + ritmo circadiano + inércia). Considera <b>uma noite normal de sono</b> antes desta jornada — o acúmulo do mês inteiro entra com a leitura real no backend. Não é FRMS certificado nem mede o seu estado real.</div>
+    <div class="fad-big">
+      <div><div class="fad-num" style="color:${FADCOL[r.lvl]}">${r.minA}</div><div style="font-size:0.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px">alerta mín. /100</div></div>
+      <div style="flex:1">
+        <div style="font-weight:600;color:${FADCOL[r.lvl]}">${FADNAME[r.lvl]}</div>
+        <div class="fad-bar"><div class="fad-mark" style="left:${r.minA}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.52rem;color:var(--dim)"><span>0</span><span>65</span><span>77,5</span><span>100</span></div>
+      </div>
+    </div>
+    <div class="fad-row">
+      <div class="fad-cell"><div class="l">Apres. ${fadClock(r.apres)}</div><div class="v" style="color:${FADCOL[fadLevel(r.aApres)]}">${Math.round(r.aApres)}</div></div>
+      <div class="fad-cell"><div class="l">Corte ${fadClock(r.corte)}</div><div class="v" style="color:${FADCOL[fadLevel(r.aCorte)]}">${Math.round(r.aCorte)}</div></div>
+      <div class="fad-cell"><div class="l">Pior ${fadClock(r.tmin)}</div><div class="v" style="color:${FADCOL[r.lvl]}">${r.minA}</div></div>
+    </div>
+    <div class="fad-flags">${fh}</div>
+    <div class="disc">Limiar 77,5 ≈ prejuízo equivalente a ~0,05% de álcool no sangue; abaixo de 65, risco alto. Base científica: modelo de três processos (Åkerstedt &amp; Folkard). Estimativa de tendência.</div>`;
+}
+
+/* ===== CONSULTAR ===== */
+const FC={alta:"confiança alta",media:"confiança média"};
+function chipText(t){return t.length>38?t.slice(0,36)+"…":t;}
+function renderChips(){document.getElementById("chips").innerHTML=QA.slice(0,7).map((x,i)=>`<button class="chip" onclick="answer(${i})">${chipText(x.q)}</button>`).join("");}
+function answer(i){
+  const x=QA[i];document.getElementById("empty")?.remove();
+  const th=document.getElementById("thread");
+  const u=document.createElement("div");u.className="msg u";u.innerHTML=`<div class="bub">${x.q}</div>`;th.appendChild(u);
+  const a=document.createElement("div");a.className="msg a";
+  a.innerHTML=`<div class="ans ${x.cls}"><div class="vbar"><span class="vl">Veredicto</span><span class="vv ${x.cls}">${x.verdict}</span></div>
+    <div class="tx">${x.body}</div><div class="meta">
+    <div class="r"><span class="l">Fundamento</span><span class="v s">${x.src}</span></div>
+    <div class="r"><span class="l">Esfera</span><span class="v">${x.esfera}</span></div>
+    <div class="r"><span class="l">Confiança</span><span class="v"><span class="conf ${x.conf}">${FC[x.conf]}</span></span></div>
+    ${x.obs?`<div class="obs">↳ ${x.obs}</div>`:""}</div></div>`;
+  th.appendChild(a);a.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function ask(){
+  const inp=document.getElementById("inp");const q=inp.value.trim();if(!q)return;
+  const ql=q.toLowerCase();let best=-1,sc=0;
+  QA.forEach((x,i)=>{let s=0;x.tags.forEach(t=>{if(ql.includes(t))s+=2;});x.q.toLowerCase().split(" ").forEach(w=>{if(w.length>4&&ql.includes(w))s++;});if(s>sc){sc=s;best=i;}});
+  document.getElementById("empty")?.remove();const th=document.getElementById("thread");
+  if(best>=0&&sc>0)answer(best);
+  else{const u=document.createElement("div");u.className="msg u";u.innerHTML=`<div class="bub">${q}</div>`;th.appendChild(u);
+    const a=document.createElement("div");a.className="msg a";
+    a.innerHTML=`<div class="ans"><div class="tx" style="padding:13px">Neste protótipo respondo a um conjunto de exemplos. No app final eu buscaria na base completa (Lei, RBAC, CCT, ACTs) e citaria a cláusula. Tente: <b>folga</b>, <b>hotel</b>, <b>jornada</b>, <b>sobreaviso</b>, <b>madrugada</b>, <b>escala</b>.</div></div>`;
+    th.appendChild(a);a.scrollIntoView({behavior:"smooth",block:"nearest"});}
+  inp.value="";
+}
+
+/* ===== FERRAMENTAS ===== */
+function parseHM(s){s=(s||"").trim();if(!s)return 0;
+  if(/^-?\d{1,3}:\d{1,2}$/.test(s)){const neg=s.startsWith("-");const[h,m]=s.replace("-","").split(":").map(Number);return (neg?-1:1)*(h*60+m);}
+  if(/^-?\d+(\.\d+)?$/.test(s))return Math.round(parseFloat(s)*60);
+  return null;}
+function fmtHM(min){const neg=min<0?"-":"";min=Math.abs(min);return neg+Math.floor(min/60)+":"+String(min%60).padStart(2,"0");}
+function addHM(){const wrap=document.getElementById("hm-rows");const d=document.createElement("div");d.className="frow";d.style.cssText="grid-template-columns:1fr auto;margin-bottom:8px;align-items:center";
+  d.innerHTML='<input class="hm" placeholder="0:00" inputmode="text"><button onclick="this.parentElement.remove();sumHM()" style="background:var(--navy);border:1px solid var(--line);color:var(--red);border-radius:8px;padding:9px 12px;cursor:pointer;font-family:inherit">×</button>';
+  wrap.appendChild(d);d.querySelector("input").focus();}
+function sumHM(){let tot=0,erro=false;document.querySelectorAll(".hm").forEach(i=>{const v=parseHM(i.value);if(v===null&&i.value.trim()){erro=true;i.style.borderColor="var(--red)";}else{i.style.borderColor="";tot+=v||0;}});
+  document.getElementById("hm-total").textContent=erro?"formato?":fmtHM(tot);
+  document.getElementById("hm-dec").textContent=erro?"use HH:MM (ex. 4:20)":(tot/60).toFixed(2).replace(".",",")+" h decimais";}
+
+function ext(url){
+  if(confirm("Abrir o site oficial em nova aba?\n\n"+url+"\n\nO CrewLex não guarda suas credenciais — você acessa direto no site.")){
+    window.open(url,"_blank","noopener");
+  }
+}
+
+renderChips();
+</script>
+</body></html>
