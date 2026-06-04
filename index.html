@@ -214,7 +214,7 @@
         <div class="grid">
           <button class="tile gold" onclick="go('conferir')">
             <div class="ic">🛫</div>
-            <div><div class="tn">Conferir escala</div><div class="td">Suba o PDF ou um print e veja as não conformidades</div></div>
+            <div><div class="tn">Conferir escala</div><div class="td">Confira sua jornada e veja as não conformidades</div></div>
           </button>
           <button class="tile" onclick="go('consultar')">
             <div class="ic">⚖️</div>
@@ -669,8 +669,8 @@ function cfRenderConferencia(c, aviso){
       <div class="seg-lbl">Aclimatação</div>
       <div class="seg" id="sg-aclim"><button data-v="aclimatado" class="sel" onclick="segPick('aclim',this)">Aclimatado</button><button data-v="desconhecido" onclick="segPick('aclim',this)">Estado desconhecido</button></div>
 
-      <div class="read-hd">2 · Dados lidos da escala — confira e corrija se preciso</div>
-      <div class="confnote">⚠️ A leitura automática pode falhar. Estes valores foram lidos da sua escala — toque para corrigir se algum estiver errado.</div>
+      <div class="read-hd">2 · Dados da jornada — confira e ajuste</div>
+      <div class="confnote">${CREWLEX_BACKEND ? '⚠️ Confira os dados que a IA leu da sua escala e corrija se algum estiver errado.' : 'Modo demonstração: estes são valores de <b>exemplo</b> — o app ainda <b>não está lendo o seu arquivo</b>. A leitura automática (escala inteira, linha por linha) entra com o backend. Por enquanto, digite os dados de <b>uma jornada</b> da sua escala para ver o parecer real dela.'}</div>
       <div class="read-card"><span class="rl">Apresentação</span><input id="c_apres" type="time"></div>
       <div class="read-card"><span class="rl">Corte dos motores</span><input id="c_corte" type="time"></div>
       <div class="read-card"><span class="rl">Pousos / etapas</span><input id="c_pousos" type="number" min="1" max="9" style="width:64px"></div>
