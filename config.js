@@ -8,6 +8,6 @@
 // NÃO use a "service_role" aqui (essa fica só no Vercel).
 // =====================================================================
 window.CREWLEX_CONFIG = {
-  SUPABASE_URL: "https://SEU-PROJETO.supabase.co",
-  SUPABASE_ANON_KEY: "COLE_AQUI_A_CHAVE_ANON_PUBLIC"
+  SUPABASE_URL: "https://wsbjaxfgxxpysjzstcdk.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzYmpheGZneHhweXNqenN0Y2RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MDExNjQsImV4cCI6MjA5NjE3NzE2NH0.McRbl4-oyOJvfB3b1wfN_v2w1c9Lpz8rdIkqGT2KIMA"
 };
