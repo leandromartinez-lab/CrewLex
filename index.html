@@ -198,7 +198,75 @@
   .pn-loc b{color:var(--green)}
   .pn-input{width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:11px 12px;color:var(--ink);font-family:inherit;font-size:0.85rem;margin-bottom:8px}
   .pn-input:focus{border-color:var(--gold);outline:none}
-</style></head><body>
+.authgate{position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#0b1c2e,#0e2238);display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto}
+.authcard{width:100%;max-width:360px;background:var(--navy2);border:1px solid var(--line);border-radius:18px;padding:22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.authlogo{font-size:1.5rem;font-weight:800;color:var(--ink);text-align:center}
+.authlogo .x{color:var(--gold)}
+.authcard h2{margin:14px 0 2px;color:var(--ink);font-size:1.2rem}
+.authcard .sub{color:var(--dim);font-size:.84rem;margin-bottom:6px}
+.authcard label{display:block;color:var(--dim);font-size:.76rem;margin:10px 0 4px}
+.authcard input,.authcard select{width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 12px;font-size:.95rem;font-family:inherit}
+.authcard input:focus,.authcard select:focus{outline:none;border-color:var(--gold)}
+.authbtn{width:100%;margin-top:16px;background:var(--gold);color:#1a1300;border:none;border-radius:10px;padding:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.authbtn:disabled{opacity:.6}
+.authswitch{margin-top:14px;text-align:center;color:var(--dim);font-size:.85rem}
+.authswitch a{color:var(--gold);cursor:pointer;text-decoration:underline}
+.autherr{margin-top:10px;color:var(--red);font-size:.85rem;min-height:1em}
+.authrow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.authnote{margin-top:14px;color:var(--dim);font-size:.72rem;line-height:1.4;text-align:center}
+</style>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head><body>
+<div id="authgate" class="authgate">
+  <div class="authcard">
+    <div class="authlogo">Crew<span class="x">Lex</span></div>
+    <div class="sub" style="text-align:center">Assistente jurídico do aeronauta</div>
+
+    <div id="auth-login">
+      <h2>Entrar</h2>
+      <div class="sub">Acesse sua conta</div>
+      <label>E-mail</label>
+      <input id="lg-email" type="email" autocomplete="email" inputmode="email" placeholder="voce@email.com">
+      <label>Senha</label>
+      <input id="lg-pass" type="password" autocomplete="current-password" placeholder="sua senha" onkeydown="if(event.key==='Enter')cxLogin()">
+      <button class="authbtn" id="lg-btn" onclick="cxLogin()">Entrar</button>
+      <div class="autherr" id="lg-err"></div>
+      <div class="authswitch">Não tem conta? <a onclick="cxShowSignup()">Criar conta</a></div>
+    </div>
+
+    <div id="auth-signup" style="display:none">
+      <h2>Criar conta</h2>
+      <div class="sub">É grátis. Comece em segundos.</div>
+      <label>Nome (opcional)</label>
+      <input id="su-nome" type="text" autocomplete="name" placeholder="Como te chamar">
+      <label>E-mail</label>
+      <input id="su-email" type="email" autocomplete="email" inputmode="email" placeholder="voce@email.com">
+      <label>Senha (mín. 6 caracteres)</label>
+      <input id="su-pass" type="password" autocomplete="new-password" placeholder="crie uma senha">
+      <div class="authrow2">
+        <div><label>Empresa</label>
+          <select id="su-empresa">
+            <option value="GOL">GOL</option>
+            <option value="LATAM">LATAM</option>
+            <option value="AZUL">Azul</option>
+            <option value="ABSA">ABSA (LATAM Cargo)</option>
+            <option value="AVION">Avion Express</option>
+            <option value="OUTRA">Outra (não listada)</option>
+          </select></div>
+        <div><label>Função</label>
+          <select id="su-funcao">
+            <option value="piloto">Piloto</option>
+            <option value="comissario">Comissário</option>
+          </select></div>
+      </div>
+      <button class="authbtn" id="su-btn" onclick="cxSignup()">Criar conta e entrar</button>
+      <div class="autherr" id="su-err"></div>
+      <div class="authswitch">Já tem conta? <a onclick="cxShowLogin()">Entrar</a></div>
+      <div class="authnote">Plano grátis: 10 perguntas por mês. Cada usuário só acessa as próprias informações.</div>
+    </div>
+  </div>
+</div>
 <div class="phone">
   <div class="statusbar"><span>9:41</span><span>CrewLex ▴</span><span>100%</span></div>
 
@@ -213,8 +281,12 @@
       <!-- HOME -->
       <div class="view on" id="v-home">
         <div class="hero">
-          <div class="greet">Bem-vindo, tripulante</div>
+          <div class="greet" id="cx-greet">Bem-vindo, tripulante</div>
           <div class="head">O que você precisa <b>resolver agora?</b></div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span id="cx-usage" style="color:var(--dim);font-size:.78rem"></span>
+            <a onclick="cxLogout()" style="color:var(--gold);font-size:.78rem;cursor:pointer;text-decoration:underline">Sair</a>
+          </div>
         </div>
         <div class="grid">
           <button class="tile gold" onclick="go('conferir')">
@@ -260,7 +332,7 @@
       <div class="view" id="v-consultar">
         <div class="ctxsel">
           <span class="ctxlab">Seu contexto</span>
-          <select id="ctx_empresa" title="Empresa"><option value="ABSA">ABSA (LATAM Cargo)</option><option value="AVION">Avion Express</option><option value="AZUL">Azul</option><option value="GOL" selected>GOL</option><option value="LATAM">LATAM</option></select>
+          <select id="ctx_empresa" title="Empresa"><option value="ABSA">ABSA (LATAM Cargo)</option><option value="AVION">Avion Express</option><option value="AZUL">Azul</option><option value="GOL" selected>GOL</option><option value="LATAM">LATAM</option><option value="OUTRA">Outra (não listada)</option></select>
           <select id="ctx_funcao" title="Função"><option value="piloto">Piloto</option><option value="comissario">Comissário</option></select>
         </div>
         <div class="chips" id="chips"></div>
@@ -412,6 +484,73 @@
 </div>
 
 <script>
+/* ===== LOGIN / CONTA (Supabase Auth) ===== */
+const CX_CFG=(window.CREWLEX_CONFIG||{});
+let cxSB=null, CX_TOKEN=null, CX_USER=null, CX_PLANO='free';
+try{ if(window.supabase && CX_CFG.SUPABASE_URL && CX_CFG.SUPABASE_ANON_KEY){ cxSB=window.supabase.createClient(CX_CFG.SUPABASE_URL, CX_CFG.SUPABASE_ANON_KEY); } }catch(e){}
+function cxHeaders(){ const h={"Content-Type":"application/json"}; if(CX_TOKEN) h["Authorization"]="Bearer "+CX_TOKEN; return h; }
+function cxShowSignup(){ document.getElementById('auth-login').style.display='none'; document.getElementById('auth-signup').style.display='block'; }
+function cxShowLogin(){ document.getElementById('auth-signup').style.display='none'; document.getElementById('auth-login').style.display='block'; }
+function cxGateShow(){ document.getElementById('authgate').style.display='flex'; }
+function cxGateHide(){ document.getElementById('authgate').style.display='none'; }
+function cxAnoMes(){ const s=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); return s.slice(0,7); }
+function cxSetUsage(usadas,limite){ const el=document.getElementById('cx-usage'); if(!el) return; if(CX_PLANO==='admin'||CX_PLANO==='tester'){ el.textContent=usadas+' perguntas neste mês · acesso liberado'; } else { el.textContent=usadas+'/'+(limite||10)+' perguntas neste mês'; } }
+function cxApplyProfile(p){
+  if(!p) return;
+  const e=document.getElementById('ctx_empresa'), f=document.getElementById('ctx_funcao');
+  if(e && p.empresa && [...e.options].some(o=>o.value===p.empresa)) e.value=p.empresa;
+  if(f && p.funcao && [...f.options].some(o=>o.value===p.funcao)) f.value=p.funcao;
+  const g=document.getElementById('cx-greet'); if(g) g.textContent='Bem-vindo'+(p.nome?(', '+p.nome):', tripulante');
+}
+async function cxRefreshUsage(){
+  if(!cxSB||!CX_USER) return;
+  try{ const {data}=await cxSB.from('uso_mensal').select('contador').eq('user_id',CX_USER.id).eq('ano_mes',cxAnoMes()).maybeSingle(); cxSetUsage((data&&data.contador)||0,10); }catch(e){}
+}
+async function cxLoadProfileAndUsage(){
+  if(!cxSB||!CX_USER) return;
+  try{ const {data:prof}=await cxSB.from('profiles').select('nome,empresa,funcao,plano').eq('id',CX_USER.id).maybeSingle(); if(prof&&prof.plano) CX_PLANO=prof.plano; cxApplyProfile(prof); }catch(e){}
+  cxRefreshUsage();
+}
+async function cxOnLogged(session){ CX_TOKEN=session?session.access_token:null; CX_USER=session?session.user:null; cxGateHide(); await cxLoadProfileAndUsage(); }
+function cxMsg(error){ const m=(error&&error.message)||''; if(/already registered|already exists|User already/i.test(m)) return 'Esse e-mail já tem conta. Tente entrar.'; if(/Invalid login credentials/i.test(m)) return 'E-mail ou senha incorretos.'; if(/Email not confirmed/i.test(m)) return 'E-mail ainda não confirmado.'; if(/Password should be|at least 6/i.test(m)) return 'A senha precisa ter ao menos 6 caracteres.'; return m||'Não deu certo. Tente de novo.'; }
+async function cxLogin(){
+  const err=document.getElementById('lg-err'); err.textContent='';
+  const email=(document.getElementById('lg-email').value||'').trim(); const pass=document.getElementById('lg-pass').value||'';
+  if(!email||!pass){ err.textContent='Informe e-mail e senha.'; return; }
+  if(!cxSB){ err.textContent='Configuração ausente (config.js).'; return; }
+  const btn=document.getElementById('lg-btn'); btn.disabled=true; btn.textContent='Entrando…';
+  try{ const {data,error}=await cxSB.auth.signInWithPassword({email,password:pass}); if(error){ err.textContent=cxMsg(error); } else { await cxOnLogged(data.session); } }
+  catch(e){ err.textContent='Falha ao entrar. Tente de novo.'; }
+  btn.disabled=false; btn.textContent='Entrar';
+}
+async function cxSignup(){
+  const err=document.getElementById('su-err'); err.textContent='';
+  const nome=(document.getElementById('su-nome').value||'').trim();
+  const email=(document.getElementById('su-email').value||'').trim();
+  const pass=document.getElementById('su-pass').value||'';
+  const empresa=document.getElementById('su-empresa').value||'GOL';
+  const funcao=document.getElementById('su-funcao').value||'piloto';
+  if(!email||!pass){ err.textContent='Informe e-mail e senha.'; return; }
+  if(pass.length<6){ err.textContent='A senha precisa ter ao menos 6 caracteres.'; return; }
+  if(!cxSB){ err.textContent='Configuração ausente (config.js).'; return; }
+  const btn=document.getElementById('su-btn'); btn.disabled=true; btn.textContent='Criando…';
+  try{
+    const {data,error}=await cxSB.auth.signUp({email,password:pass});
+    if(error){ err.textContent=cxMsg(error); btn.disabled=false; btn.textContent='Criar conta e entrar'; return; }
+    const uid=data.user&&data.user.id;
+    if(uid){ try{ await cxSB.from('profiles').insert({id:uid,nome:nome||null,email:email,empresa:empresa,funcao:funcao}); }catch(e){} }
+    if(data.session){ await cxOnLogged(data.session); }
+    else { const {data:d2,error:e2}=await cxSB.auth.signInWithPassword({email,password:pass}); if(e2){ err.textContent='Conta criada. Faça login para entrar.'; cxShowLogin(); } else { await cxOnLogged(d2.session); } }
+  }catch(e){ err.textContent='Falha ao criar conta. Tente de novo.'; }
+  btn.disabled=false; btn.textContent='Criar conta e entrar';
+}
+async function cxLogout(){ try{ if(cxSB) await cxSB.auth.signOut(); }catch(e){} CX_TOKEN=null; CX_USER=null; CX_PLANO='free'; cxShowLogin(); cxGateShow(); }
+(async function cxInit(){
+  if(!cxSB){ cxGateShow(); return; }
+  try{ const {data}=await cxSB.auth.getSession(); if(data&&data.session){ await cxOnLogged(data.session); } else { cxGateShow(); } }catch(e){ cxGateShow(); }
+  try{ cxSB.auth.onAuthStateChange((_e,session)=>{ CX_TOKEN=session?session.access_token:null; CX_USER=session?session.user:null; }); }catch(e){}
+})();
+
 const QA=[{"q": "Mudaram minha programação e empurraram minha folga. A empresa tem que pagar?", "tags": ["folga", "indenização", "empurr", "postergad"], "verdict": "Depende de quanto atrasou", "cls": "warn", "body": "O início da folga pode ser <b>postergado em até 4 horas</b> sem indenização. Acima disso, a empresa paga <b>indenização de R$ 700,00</b>. Em casos excepcionais (meteorologia, manutenção não programada, imperiosa necessidade), o atraso pode ir até 12 horas — ultrapassado esse limite, a indenização também é devida. Devida <b>uma vez</b> por sequência de folgas agrupadas.", "src": "ACT Gol cl. 6.4 §1º e §2º", "esfera": "Trabalhista", "conf": "alta", "obs": "Na CCT 25/26 (cl. 3.4.4) o valor é R$ 732,76 — sendo Gol, vale o ACT (R$ 700,00), por ser norma específica da empresa."}, {"q": "Tenho direito a hotel nesse pernoite fora da base?", "tags": ["hotel", "pernoite", "hospedagem", "acomodação"], "verdict": "Sim, em pernoite a serviço", "cls": "ok", "body": "Pernoitando <b>fora da base contratual a serviço</b>, a empresa garante <b>acomodação individual</b> (quarto individual, banheiro privativo, condições de higiene, ruído, temperatura e luminosidade). Se aderiu à base virtual, não há hotel durante repouso/folgas lá gozados — mas pernoite na base contratual <b>entre voos</b> gera hotel, transporte e diárias.", "src": "Lei art. 47 + ACT Gol cl. 8.1 e 5.19 §11", "esfera": "Trabalhista", "conf": "alta", "obs": "Treinamento de SOLO na base não gera hotel; treinamento de VOO com apresentação para voo é jornada — e o pernoite a serviço gera direito a hotel."}, {"q": "Essa jornada de 9h40 está dentro do limite?", "tags": ["jornada", "limite", "9h", "estour"], "verdict": "Não — excede o limite", "cls": "bad", "body": "Para <b>tripulação simples</b> em serviço aéreo regular, o limite de jornada é <b>9 horas</b>. 9h40 <b>ultrapassa</b>. A hora excedente só é admissível como ampliação (art. 40), a critério do comandante e por motivo justificado, remunerada com <b>adicional de 50%</b>.", "src": "Lei art. 36 (Inc. I) + RBAC 117 Ap. A", "esfera": "Segurança + Trabalhista", "conf": "alta", "obs": "Cálculo determinístico — o número sai do motor, não de interpretação."}, {"q": "Fiquei de sobreaviso e não fui acionado. Quanto de repouso tenho?", "tags": ["sobreaviso", "repouso", "acionad"], "verdict": "12 horas", "cls": "ok", "body": "Sobreaviso <b>sem acionamento</b> dá direito a <b>repouso mínimo de 12 horas</b> antes de nova tarefa. A Lei prevê 8h (art. 43 §4º) e o RBAC 10h, mas o ACT e a CCT elevam para <b>12h</b> — prevalece o mais favorável a você.", "src": "ACT Gol cl. 5.13 §4º (CCT 25/26 cl. 3.3.11 §4º)", "esfera": "Trabalhista", "conf": "alta", "obs": "Caso clássico de sobreposição: no trabalhista vence a regra mais protetiva, não a da ANAC."}, {"q": "Posso ser escalado para uma terceira madrugada seguida?", "tags": ["madrugada", "terceira", "consecutiv"], "verdict": "Só como extra em retorno", "cls": "warn", "body": "Limite: <b>2 madrugadas/early starts consecutivos</b>, máx. <b>4 em 168h</b>. A <b>terceira</b> só é possível como <b>tripulante extra</b>, em voo de retorno à base, encerrando a jornada. O ciclo de 168h reinicia com 48h livres. Após 2 seguidas, a apresentação no 3º dia só após as 08h.", "src": "ACT Gol cl. 5.16 + Lei art. 42", "esfera": "Segurança / fadiga", "conf": "alta", "obs": "Na Gol, 'early start' (05h–07h Brasília) conta junto com madrugada. Madrugada = 0h–6h pelo corte de motores."}, {"q": "Quantos dias de licença tenho quando caso?", "tags": ["licença", "casamento", "gala", "casar"], "verdict": "5 dias consecutivos", "cls": "ok", "body": "A CLT prevê 3 dias, mas o acordo <b>ampliou para 5 dias consecutivos</b>. Licença-paternidade: 5 dias, ampliável para <b>20</b> se comunicar a chefia com 60 dias de antecedência.", "src": "ACT Gol cl. 5.6 e 5.7 (amplia CLT art. 473)", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "A empresa pode alterar minha escala sem me consultar?", "tags": ["escala", "alteração", "mudança", "consultar", "anuência"], "verdict": "Só com aviso e só atraso", "cls": "warn", "body": "Sem sua anuência, só vale se comunicada com <b>2h de antecedência</b> (na base) ou <b>1h</b> (fora da base), e desde que seja um <b>atraso</b> da apresentação — <b>nunca um adiantamento</b>.", "src": "RBAC 117 Apêndice B, item (h)", "esfera": "Segurança", "conf": "alta", "obs": "Guarde o print com horário de quando recebeu o aviso."}, {"q": "A empresa pode pôr dia em branco na escala?", "tags": ["branco", "dias", "indefinido"], "verdict": "Não é permitido", "cls": "bad", "body": "A escala deve definir início/término de voo, reserva, sobreaviso e folgas. É <b>vedado</b> consignar horários indefinidos — <b>dias em branco são proibidos</b>.", "src": "Lei art. 26, I e II", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Fui acionado na reserva para um voo. A jornada conta desde quando?", "tags": ["reserva", "acionad", "jornada", "conta"], "verdict": "Desde a apresentação da reserva", "cls": "ok", "body": "A jornada conta <b>a partir da apresentação da reserva</b>, não do voo. E você <b>não precisa</b> dos 30 min de apresentação do voo, pois já se apresentou para a reserva.", "src": "Lei art. 35 §1º", "esfera": "Segurança/Trabalhista", "conf": "alta", "obs": ""}, {"q": "Devo ser pago pela escala publicada ou pela executada?", "tags": ["pagamento", "escala", "publicada", "executada", "remuneração"], "verdict": "A que pagar mais", "cls": "ok", "body": "A empresa paga a escala que refletir a <b>maior remuneração</b> — comparando publicada e executada. Vale inclusive em dias de dispensa médica.", "src": "CCT 25/26 cl. 3.2.5", "esfera": "Trabalhista", "conf": "alta", "obs": "Guarde as duas escalas (publicada e executada)."}, {"q": "Posso ser contratado como aeronauta via PJ?", "tags": ["pj", "pessoa jurídica", "contrato"], "verdict": "Não", "cls": "bad", "body": "A função de tripulante deve ser formalizada por <b>contrato de trabalho</b> direto com o operador. Contratação via PJ não é permitida.", "src": "Lei art. 20, caput", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Entre RBAC, Lei e CCT, qual vence em conflito?", "tags": ["hierarquia", "conflito", "prevalece", "rbac", "cct", "vence"], "verdict": "CCT no topo", "cls": "ok", "body": "Em regra, o <b>RBAC 117 prevalece sobre a Lei</b>, e a <b>CCT prevalece sobre ambos</b>. Na prática: em segurança vence o limite mais restritivo da ANAC; em temas trabalhistas vence a norma mais favorável — geralmente a CCT ou o ACT da empresa.", "src": "Hierarquia: RBAC 117 · Lei 13.475 · CCT", "esfera": "Regra de hierarquia", "conf": "alta", "obs": "É a regra-mãe do CrewLex."}, {"q": "O que é base virtual? Como funciona?", "tags": ["base virtual", "base provisoria", "base provisória", "virtual", "escala direcionada", "base direcionada"], "verdict": "Varia por empresa", "cls": "warn", "body": "<b>Base virtual</b> (base provisória voluntária) é uma base à qual o aeronauta adere <b>voluntariamente</b> para iniciar/terminar viagens, fazer reservas/sobreavisos e gozar folgas ali. <b>As regras mudam conforme a empresa:</b><br><br><b>Azul (ACT Base Virtual, cl. 4ª):</b> adesão voluntária e <b>não</b> é transferência de base contratual (sem indenização nem estabilidade, §1º); segue senioridade e elegibilidade (§2º); folgas contam pro mínimo mensal (§3º), mas <b>sem</b> transporte, hotel e diárias nessas folgas e no repouso anterior (§4º) — só há hotel/diárias se pernoitar na base contratual (§9º); desistência ou encerramento com <b>30 dias</b> (§5º/§6º); o retorno à base contratual depois das folgas é por sua conta e não conta jornada (§10º).<br><br><b>GOL (ACT pilotos 25/26):</b> também prevê base virtual — por exemplo, o reembolso de deslocamento na madrugada (R$ 25 por ocorrência, 00h–05h59) é devido <b>na base virtual</b>, não na contratual (cl. 5.9 §1º). As regras completas de adesão da base virtual da GOL estão no ACT e serão detalhadas quando a base de documentos for ligada.", "src": "ACT Azul cl. 4ª + ACT GOL pilotos cl. 5.9", "esfera": "Trabalhista (varia por empresa)", "conf": "alta", "obs": "Cada empresa tem seu ACT: a base virtual da Azul está detalhada; a da GOL será completada com a base de documentos no backend. Outras empresas podem ter regras próprias."}];
 const CEN={"escala": {"trip": "simples", "origin": "base", "apres": "05:30", "corte": "14:40", "pousos": 5, "madrugada": "nao"}, "print": {"trip": "simples", "origin": "sobreaviso", "apres": "04:15", "corte": "10:30", "pousos": 3, "madrugada": "sim"}};
 const TITLES={home:null,conferir:["Conferir escala","upload e laudo"],consultar:["Perguntar","com base na lei"],motor:["Calcular jornada","motor determinístico"],fontes:["Fontes","de onde vêm as respostas"],ferramentas:["Ferramentas","atalhos e cálculos"],pernoite:["Pernoite","o que tem por perto"]};
@@ -800,10 +939,12 @@ async function ask(){
   const empresa=(document.getElementById("ctx_empresa")||{}).value||"GOL";
   const funcao=(document.getElementById("ctx_funcao")||{}).value||"piloto";
   try{
-    const r=await fetch("/api/perguntar",{method:"POST",headers:{"Content-Type":"application/json"},
+    const r=await fetch("/api/perguntar",{method:"POST",headers:cxHeaders(),
       body:JSON.stringify({pergunta:q,empresa:empresa,funcao:funcao})});
     const d=await r.json().catch(()=>({}));
-    if(!r.ok){
+    if(r.status===401||(d&&d.erro_login)){ a.innerHTML=`<div class="ans warn"><div class="tx" style="padding:13px">Sua sessão expirou ou você não está logado. Faça login para continuar.</div></div>`; cxShowLogin(); cxGateShow(); }
+    else if(d&&d.limite_atingido){ a.innerHTML=`<div class="ans warn"><div class="tx" style="padding:13px">🔒 <b>Limite do plano grátis</b><br>${escHtml(d.resposta||"")}</div></div>`; if(typeof d.usadas==='number')cxSetUsage(d.usadas,d.limite||10); }
+    else if(!r.ok){
       a.innerHTML=`<div class="ans bad"><div class="tx" style="padding:13px">⚠️ <b>Motor retornou erro ${r.status}</b><br>${escHtml(d.erro||"(sem mensagem)")}<br><span style="color:var(--dim);font-size:0.85em">${escHtml(d.detalhe||"")}</span></div></div>`;
     }else{
       const cls=(d.encontrou===false)?"warn":"ok";
@@ -814,6 +955,7 @@ async function ask(){
     a.innerHTML=`<div class="ans bad"><div class="tx" style="padding:13px">⚠️ <b>Não consegui falar com o motor</b><br><span style="color:var(--dim);font-size:0.85em">${escHtml(e&&e.message?e.message:String(e))}</span><br>Se você abriu o app fora do Vercel, o "Perguntar" online não está disponível aqui.</div></div>`;
   }
   const last=th.lastElementChild;if(last)last.scrollIntoView({behavior:"smooth",block:"nearest"});
+  cxRefreshUsage();
 }
 
 /* ===== FERRAMENTAS ===== */
