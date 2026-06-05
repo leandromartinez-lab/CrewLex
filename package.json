@@ -1,0 +1,9 @@
+{
+  "name": "crewlex-fase2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend serverless do CrewLex — extração (IA de visão) e contribuição anônima de fadiga.",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
