@@ -112,6 +112,10 @@
 
   /* chat consultar */
   .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+  .ctxsel{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .ctxsel .ctxlab{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .ctxsel select{background:var(--navy2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:0.78rem;cursor:pointer}
+  .ans .tx b{color:var(--gold)}
   .chip{background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.66rem;padding:7px 11px;border-radius:14px;cursor:pointer}
   .chip:active{border-color:var(--gold);color:var(--gold)}
   .thread{display:flex;flex-direction:column;gap:11px;margin-bottom:8px}
@@ -252,6 +256,11 @@
 
       <!-- CONSULTAR -->
       <div class="view" id="v-consultar">
+        <div class="ctxsel">
+          <span class="ctxlab">Seu contexto</span>
+          <select id="ctx_empresa" title="Empresa"><option value="GOL">GOL</option><option value="LATAM">LATAM</option><option value="AZUL">Azul</option></select>
+          <select id="ctx_funcao" title="Função"><option value="piloto">Piloto</option><option value="comissario">Comissário</option></select>
+        </div>
         <div class="chips" id="chips"></div>
         <div class="thread" id="thread">
           <div class="empty" id="empty">Toque numa pergunta ou digite a sua.<br><b>O CrewLex responde citando a fonte.</b></div>
@@ -765,17 +774,43 @@ function answer(i){
     ${x.obs?`<div class="obs">↳ ${x.obs}</div>`:""}</div></div>`;
   th.appendChild(a);a.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
-function ask(){
-  const inp=document.getElementById("inp");const q=inp.value.trim();if(!q)return;
+function escHtml(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function fmtAns(s){return escHtml(s).replace(/\n/g,"<br>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");}
+function localMatch(q){
   const ql=q.toLowerCase();let best=-1,sc=0;
   QA.forEach((x,i)=>{let s=0;x.tags.forEach(t=>{if(ql.includes(t))s+=2;});x.q.toLowerCase().split(" ").forEach(w=>{if(w.length>4&&ql.includes(w))s++;});if(s>sc){sc=s;best=i;}});
+  return sc>0?best:-1;
+}
+function qaHTML(x){return `<div class="ans ${x.cls}"><div class="vbar"><span class="vl">Veredicto</span><span class="vv ${x.cls}">${x.verdict}</span></div>
+    <div class="tx">${x.body}</div><div class="meta">
+    <div class="r"><span class="l">Fundamento</span><span class="v s">${x.src}</span></div>
+    <div class="r"><span class="l">Esfera</span><span class="v">${x.esfera}</span></div>
+    <div class="r"><span class="l">Confiança</span><span class="v"><span class="conf ${x.conf}">${FC[x.conf]}</span></span></div>
+    ${x.obs?`<div class="obs">↳ ${x.obs}</div>`:""}</div></div>`;}
+async function ask(){
+  const inp=document.getElementById("inp");const q=inp.value.trim();if(!q)return;
   document.getElementById("empty")?.remove();const th=document.getElementById("thread");
-  if(best>=0&&sc>0)answer(best);
-  else{const u=document.createElement("div");u.className="msg u";u.innerHTML=`<div class="bub">${q}</div>`;th.appendChild(u);
-    const a=document.createElement("div");a.className="msg a";
-    a.innerHTML=`<div class="ans"><div class="tx" style="padding:13px">Neste protótipo respondo a um conjunto de exemplos. No app final eu buscaria na base completa (Lei, RBAC, CCT, ACTs) e citaria a cláusula. Tente: <b>folga</b>, <b>hotel</b>, <b>jornada</b>, <b>sobreaviso</b>, <b>madrugada</b>, <b>escala</b>.</div></div>`;
-    th.appendChild(a);a.scrollIntoView({behavior:"smooth",block:"nearest"});}
+  const u=document.createElement("div");u.className="msg u";u.innerHTML=`<div class="bub">${escHtml(q)}</div>`;th.appendChild(u);
   inp.value="";
+  const a=document.createElement("div");a.className="msg a";
+  a.innerHTML=`<div class="ans"><div class="tx" style="padding:13px">Consultando a base jurídica…</div></div>`;
+  th.appendChild(a);a.scrollIntoView({behavior:"smooth",block:"nearest"});
+  const empresa=(document.getElementById("ctx_empresa")||{}).value||"GOL";
+  const funcao=(document.getElementById("ctx_funcao")||{}).value||"piloto";
+  try{
+    const r=await fetch("/api/perguntar",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({pergunta:q,empresa:empresa,funcao:funcao})});
+    if(!r.ok)throw new Error("status "+r.status);
+    const d=await r.json();
+    const cls=(d.encontrou===false)?"warn":"ok";
+    const fontes=(d.fontes&&d.fontes.length)?`<div class="meta"><div class="r"><span class="l">Fontes</span><span class="v s">${d.fontes.map(f=>escHtml((f.fonte||"")+(f.identificador?(" "+f.identificador):""))).join("  ·  ")}</span></div></div>`:"";
+    a.innerHTML=`<div class="ans ${cls}"><div class="tx">${fmtAns(d.resposta||"")}</div>${fontes}</div>`;
+  }catch(e){
+    const bi=localMatch(q);
+    if(bi>=0){a.innerHTML=qaHTML(QA[bi]);}
+    else{a.innerHTML=`<div class="ans"><div class="tx" style="padding:13px">Não consegui falar com o motor de consulta agora. Se você abriu o app fora do Vercel, o "Perguntar" online não está disponível aqui — use a URL do app no Vercel, ou toque numa pergunta de exemplo acima.</div></div>`;}
+  }
+  const last=th.lastElementChild;if(last)last.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
 /* ===== FERRAMENTAS ===== */
