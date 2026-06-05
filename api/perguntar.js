@@ -1,16 +1,18 @@
 // =====================================================================
 // CrewLex · /api/perguntar  (Vercel Serverless Function)
-// Fluxo: recebe {pergunta, empresa, funcao} -> busca as cláusulas certas
-// no Supabase (função buscar_clausulas) -> pede ao Claude (Haiku) uma
-// resposta fundamentada SÓ nessas cláusulas, citando as fontes.
-// DNA: "sem dado fantasma" — se não houver base, responde que não achou.
+// AGORA com LOGIN (Supabase Auth) e LIMITE do plano grátis.
+// Fluxo: valida o login do usuário -> confere/consome o limite do mês
+// -> busca as cláusulas certas (buscar_clausulas) -> pede ao Claude
+// (Haiku) uma resposta fundamentada SÓ nessas cláusulas, citando fontes.
+// DNA: "sem dado fantasma".
 //
-// Variáveis de ambiente (configurar no Vercel):
+// Variáveis de ambiente (Vercel):
 //   SUPABASE_URL            (ex.: https://xxxx.supabase.co)
-//   SUPABASE_SERVICE_ROLE   (service_role key do Supabase — fica SÓ no backend)
+//   SUPABASE_SERVICE_ROLE   (service_role key — SÓ no backend)
 //   ANTHROPIC_API_KEY       (chave da API da Anthropic)
 //   CLAUDE_MODEL            (opcional; default Haiku)
-//   ALLOWED_ORIGIN          (opcional; default '*' — em produção, a URL do app)
+//   ALLOWED_ORIGIN          (opcional; default '*')
+//   LIMITE_MENSAL           (opcional; default 10 — perguntas/mês no grátis)
 // =====================================================================
 
 const ALLOWED_ORIGIN        = process.env.ALLOWED_ORIGIN || '*';
@@ -18,11 +20,18 @@ const SUPABASE_URL          = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 const ANTHROPIC_API_KEY     = process.env.ANTHROPIC_API_KEY;
 const CLAUDE_MODEL          = process.env.CLAUDE_MODEL || 'claude-haiku-4-5-20251001';
+const LIMITE_MENSAL         = parseInt(process.env.LIMITE_MENSAL || '10', 10);
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+// mês corrente no fuso de Brasília, formato 'YYYY-MM'
+function anoMesBR() {
+  const s = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  return s.slice(0, 7);
 }
 
 module.exports = async (req, res) => {
@@ -45,7 +54,59 @@ module.exports = async (req, res) => {
       return res.status(500).json({ erro: 'Backend sem Supabase configurado.' });
     }
 
-    // ---- 2) Buscar cláusulas (RAG) via RPC do Supabase ------------------
+    // ---- 2) Login: identificar o usuário pelo token --------------------
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    if (!token) {
+      return res.status(401).json({ erro_login: true, resposta: 'Faça login no CrewLex para usar a consulta.' });
+    }
+    let userId = null;
+    try {
+      const uResp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { 'apikey': SUPABASE_SERVICE_ROLE, 'Authorization': `Bearer ${token}` }
+      });
+      if (uResp.ok) {
+        const u = await uResp.json();
+        userId = u && u.id;
+      }
+    } catch (e) { /* cai no 401 abaixo */ }
+    if (!userId) {
+      return res.status(401).json({ erro_login: true, resposta: 'Sua sessão expirou ou é inválida. Faça login novamente.' });
+    }
+
+    // ---- 3) Limite do plano grátis (consome 1, de forma atômica) -------
+    let usadas = null, limite = LIMITE_MENSAL;
+    try {
+      const cResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consumir_pergunta`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_SERVICE_ROLE,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+        },
+        body: JSON.stringify({ p_user_id: userId, p_ano_mes: anoMesBR(), p_limite: LIMITE_MENSAL })
+      });
+      if (cResp.ok) {
+        const arr = await cResp.json();
+        const row = Array.isArray(arr) ? arr[0] : arr;
+        if (row) {
+          limite = (typeof row.limite === 'number') ? row.limite : LIMITE_MENSAL;
+          usadas = row.usadas;
+          if (row.permitido === false) {
+            return res.status(200).json({
+              limite_atingido: true,
+              usadas: row.usadas,
+              limite: limite,
+              resposta: `Você já usou suas ${limite} perguntas deste mês no plano grátis. O limite renova no início do próximo mês. Em breve teremos um plano com mais consultas.`,
+              fontes: []
+            });
+          }
+        }
+      }
+      // se a checagem falhar (cResp não-ok), seguimos (fail-open) p/ não travar o usuário
+    } catch (e) { /* fail-open */ }
+
+    // ---- 4) Buscar cláusulas (RAG) via RPC do Supabase -----------------
     const rpcResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/buscar_clausulas`, {
       method: 'POST',
       headers: {
@@ -62,25 +123,26 @@ module.exports = async (req, res) => {
     }
     const clausulas = await rpcResp.json();
 
-    // ---- 3) Sem cláusulas? Resposta honesta, sem gastar IA -------------
+    // ---- 5) Sem cláusulas? Resposta honesta, sem gastar IA ------------
     if (!Array.isArray(clausulas) || clausulas.length === 0) {
       return res.status(200).json({
         encontrou: false,
+        usadas, limite,
         resposta: 'Não encontrei, na base jurídica do CrewLex, uma cláusula que responda diretamente a essa pergunta para o seu contexto (empresa e função). Tente reformular com outras palavras ou consulte o SNA.',
         fontes: []
       });
     }
 
     if (!ANTHROPIC_API_KEY) {
-      // Tem base, mas não dá pra redigir: devolve as fontes mesmo assim.
       return res.status(200).json({
         encontrou: true,
+        usadas, limite,
         resposta: 'Encontrei cláusulas relacionadas, mas a redação automática está indisponível no momento. Veja as fontes abaixo.',
         fontes: clausulas.map(toFonte)
       });
     }
 
-    // ---- 4) Montar contexto e pedir resposta fundamentada ao Claude ----
+    // ---- 6) Montar contexto e pedir resposta fundamentada ao Claude ---
     const contexto = clausulas.map((c, i) =>
       `[${i + 1}] (${c.fonte} · ${c.documento} · ${c.identificador || 's/ id'})\n` +
       `${c.titulo ? c.titulo + ': ' : ''}${c.texto}`
@@ -117,9 +179,9 @@ module.exports = async (req, res) => {
 
     if (!aiResp.ok) {
       const t = await aiResp.text();
-      // Ex.: crédito esgotado / rate limit. Degrada com elegância.
       return res.status(200).json({
         encontrou: true,
+        usadas, limite,
         erro: 'consulta_indisponivel',
         resposta: 'A consulta inteligente está temporariamente indisponível. As cláusulas relacionadas estão listadas abaixo; tente novamente mais tarde.',
         fontes: clausulas.map(toFonte),
@@ -132,6 +194,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       encontrou: true,
+      usadas, limite,
       resposta: resposta || 'Não consegui redigir uma resposta. Veja as fontes abaixo.',
       fontes: clausulas.map(toFonte)
     });
