@@ -591,8 +591,9 @@ let cfFileB64=null, cfFileMime=null, cfConsentEstudo=false, cfEmpresa=null;
 async function crewlexExtrair(){
   const r=await fetch(CREWLEX_BACKEND+"/api/extrair",{method:"POST",headers:cxHeaders(),
     body:JSON.stringify({imagem_base64:cfFileB64, mime:cfFileMime})});
-  if(!r.ok) throw new Error("extrair "+r.status);
-  return await r.json();
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){ const e=new Error("HTTP "+r.status); e.status=r.status; e.detalhe=(j&&(j.erro||j.detalhe||j.resposta))||""; e.login=!!(j&&j.erro_login); throw e; }
+  return j;
 }
 function jornadaToPre(res){
   const js=(res&&res.jornadas)||[];
@@ -822,8 +823,19 @@ function cfPick(tipo){
       <div class="ln">› preparando para sua conferência…</div></div></div>`;
   if(CF_REAL && cfFileB64){
     crewlexExtrair()
-      .then(j=>cfRenderConferencia(jornadaToPre(j), (j&&j.eh_escala===false)?"O arquivo não parece uma escala — confira/preencha manualmente.":null))
-      .catch(()=>cfRenderConferencia({}, "Leitura automática indisponível agora — confira/preencha manualmente."));
+      .then(j=>{
+        const pre=jornadaToPre(j);
+        const n=((j&&j.jornadas)||[]).length;
+        let aviso=null;
+        if(j&&j.eh_escala===false){ aviso="O arquivo não parece uma escala — confira/preencha manualmente."; }
+        else if(!pre.apres && !pre.corte){ aviso="A IA leu o documento"+(n?(" e encontrou "+n+" atividade(s)"):"")+", mas não identificou apresentação e corte para preencher (costuma acontecer com a grade do mês inteiro). Preencha a jornada que você quer conferir."; }
+        cfRenderConferencia(pre, aviso);
+      })
+      .catch(err=>{
+        if(err&&err.login){ cfRenderConferencia({}, "Sua sessão expirou — faça login e tente de novo."); cxShowLogin(); cxGateShow(); return; }
+        const det=(err&&err.detalhe)?(" — "+err.detalhe):"";
+        cfRenderConferencia({}, "A leitura automática falhou ("+((err&&err.status)||"sem resposta do servidor")+")"+det+". Confira/preencha manualmente abaixo.");
+      });
   }else{
     setTimeout(()=>cfRenderConferencia(CEN[tipo], null), 1700);
   }
