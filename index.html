@@ -687,7 +687,8 @@ const TAB1_SIMPLES=[
 ];
 const REGRAS={repousoSob:{lei:8,rbac:10,cct:12,act:12},repousoBase:12,foraBase:1};
 function toMin(s){const[h,m]=s.split(":").map(Number);return h*60+m;}
-function fmtH(h){const s=h<0?"-":"";h=Math.abs(h);const hh=Math.floor(h),mm=Math.round((h-hh)*60);return s+hh+"h"+(mm?String(mm).padStart(2,"0"):"00");}
+function validHM(s){return typeof s==="string" && /^\d{1,2}:\d{2}$/.test(s.trim());}
+function fmtH(h){if(h==null||!isFinite(h))return "—";const s=h<0?"-":"";h=Math.abs(h);const hh=Math.floor(h),mm=Math.round((h-hh)*60);return s+hh+"h"+(mm?String(mm).padStart(2,"0"):"00");}
 function fmtData(iso){if(!iso)return "";const[a,m,dd]=iso.split("-");return dd+"/"+m;}
 let SEL={func:"piloto",trip:"simples",classe:"1",origin:"base",aclim:"aclimatado"};
 function segPick(grp,btn){
@@ -703,9 +704,16 @@ function faixaApres(m){for(const f of TAB1_SIMPLES){const a=toMin(f.ini),b=toMin
 function limiteSimples(apres,etapas){const f=faixaApres(toMin(apres));for(const[me,lim]of f.e){if(etapas<=me)return lim;}return f.e[f.e.length-1][1];}
 
 function buildLaudo(d){
-  const j=calc(d.apres,d.corte); const cards=[]; let nc=0;
+  const apOk=validHM(d.apres), coOk=validHM(d.corte), jOk=apOk&&coOk;
+  const j=jOk?calc(d.apres,d.corte):{durH:null,cruza:false}; const cards=[]; let nc=0;
   const dataTxt = d.data ? ` <span style="color:var(--dim)">(${d.data})</span>` : "";
 
+  // JORNADA — só calcula se apresentação E corte forem válidos (sem dado fantasma)
+  if(!jOk){
+    cards.push({nm:"Jornada de trabalho"+dataTxt,cl:"warn",vd:"Incompleto",
+      dt:`Não dá para calcular a jornada sem <b>apresentação</b> e <b>corte dos motores</b>.${apOk?"":" Apresentação não foi lida."}${coOk?"":" Corte não foi lido."} Confira sua escala, preencha os dois campos acima e toque em <b>Conferir agora</b>.`,
+      s:"RBAC 117 Ap. B, Tabela 1",cf:"alta"});
+  } else {
   // JORNADA — tabela do Apêndice B p/ simples (com aclimatação); composta/revez por classe
   let lim, baseFonte, cf="alta", faixaTxt="";
   const fx=faixaApres(toMin(d.apres));
@@ -728,6 +736,7 @@ function buildLaudo(d){
   cards.push({nm:"Jornada de trabalho"+dataTxt,cl,vd:cl==="bad"?"Violação":cl==="warn"?"No limite":"Conforme",
     dt:`Apurada <b>${fmtH(j.durH)}</b> (c/ 30min pós-corte). Limite <b>${fmtH(lim)}</b>.${faixaTxt}${aclimTxt} Margem <b>${fmtH(marg)}</b>.`,
     s:baseFonte,cf});
+  }
 
   // POUSOS — 5 é permitido c/ +2h de repouso (não é violação automática)
   if(d.trip==="simples"){
@@ -751,7 +760,7 @@ function renderLaudo(d,host){
   const {j,cards,nc}=buildLaudo(d);
   const ncCls=nc===0?"ok":nc===1?"warn":"bad";
   let h=`<div class="hud">
-    <div class="cell"><div class="k">Jornada</div><div class="v">${fmtH(j.durH)}</div></div>
+    <div class="cell"><div class="k">Jornada</div><div class="v">${j.durH==null?"—":fmtH(j.durH)}</div></div>
     <div class="cell"><div class="k">Pousos</div><div class="v">${d.pousos}</div></div>
     <div class="cell"><div class="k">Não conf.</div><div class="v ${ncCls}">${nc}</div></div></div>`;
   for(const c of cards)h+=`<div class="card ${c.cl}"><div class="top"><span class="nm">${c.nm}</span><span class="vd ${c.cl}">${c.vd}</span></div>
@@ -890,12 +899,38 @@ function fadAssess(d){
   const sleep=Math.max(0,Math.min(8,wake-(-0.5)));
   const Swake=Math.max(30,Math.min(100,40+sleep*7.5));
   const A=t=>{const S=Swake*Math.exp(-Math.max(0,t-wake)/40);let inr=0;const tw=t-wake;if(tw>=0&&tw<1.5)inr=-12*Math.exp(-tw/0.5);return Math.max(0,Math.min(100,S+fadCirc(t)+inr));};
-  let minA=101,tmin=apres;for(let t=apres;t<=corte+1e-9;t+=0.25){const v=A(t);if(v<minA){minA=v;tmin=t;}}
-  return {apres,corte,sleep,aApres:A(apres),aCorte:A(corte),minA:Math.round(minA),tmin,lvl:fadLevel(minA)};
+  let minA=101,tmin=apres;const samples=[];for(let t=apres;t<=corte+1e-9;t+=0.25){const v=A(t);samples.push({t,a:v});if(v<minA){minA=v;tmin=t;}}
+  return {apres,corte,sleep,aApres:A(apres),aCorte:A(corte),minA:Math.round(minA),tmin,lvl:fadLevel(minA),samples};
+}
+function fadChart(r){
+  const W=300,H=110,padL=6,padR=24,padT=8,padB=16;
+  const t0=r.apres,t1=r.corte,span=Math.max(0.5,t1-t0);
+  const X=t=>padL+((t-t0)/span)*(W-padL-padR);
+  const Y=a=>padT+(1-(Math.max(0,Math.min(100,a))/100))*(H-padT-padB);
+  const y0=Y(0),y65=Y(65),y775=Y(77.5),y100=Y(100);
+  const line=r.samples.map((s,i)=>(i?"L":"M")+X(s.t).toFixed(1)+" "+Y(s.a).toFixed(1)).join(" ");
+  const area=line+" L"+X(t1).toFixed(1)+" "+y0.toFixed(1)+" L"+X(t0).toFixed(1)+" "+y0.toFixed(1)+" Z";
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin:4px 0" role="img" aria-label="curva de alerta ao longo da jornada">`
+    +`<rect x="${padL}" y="${y100.toFixed(1)}" width="${W-padL-padR}" height="${(y775-y100).toFixed(1)}" fill="var(--green)" opacity="0.10"/>`
+    +`<rect x="${padL}" y="${y775.toFixed(1)}" width="${W-padL-padR}" height="${(y65-y775).toFixed(1)}" fill="var(--yellow)" opacity="0.10"/>`
+    +`<rect x="${padL}" y="${y65.toFixed(1)}" width="${W-padL-padR}" height="${(y0-y65).toFixed(1)}" fill="var(--red)" opacity="0.10"/>`
+    +`<line x1="${padL}" y1="${y775.toFixed(1)}" x2="${W-padR}" y2="${y775.toFixed(1)}" stroke="var(--green)" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.55"/>`
+    +`<line x1="${padL}" y1="${y65.toFixed(1)}" x2="${W-padR}" y2="${y65.toFixed(1)}" stroke="var(--red)" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.55"/>`
+    +`<text x="${W-padR+2}" y="${(y775+3).toFixed(1)}" fill="var(--dim)" font-size="7">77,5</text>`
+    +`<text x="${W-padR+2}" y="${(y65+3).toFixed(1)}" fill="var(--dim)" font-size="7">65</text>`
+    +`<path d="${area}" fill="${FADCOL[r.lvl]}" opacity="0.12"/>`
+    +`<path d="${line}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`
+    +`<circle cx="${X(r.apres).toFixed(1)}" cy="${Y(r.aApres).toFixed(1)}" r="2.3" fill="var(--ink)"/>`
+    +`<circle cx="${X(r.corte).toFixed(1)}" cy="${Y(r.aCorte).toFixed(1)}" r="2.3" fill="var(--ink)"/>`
+    +`<circle cx="${X(r.tmin).toFixed(1)}" cy="${Y(r.minA).toFixed(1)}" r="3.3" fill="${FADCOL[r.lvl]}" stroke="var(--navy)" stroke-width="1"/>`
+    +`<text x="${X(r.apres).toFixed(1)}" y="${H-4}" fill="var(--dim)" font-size="7.5" text-anchor="start">${fadClock(r.apres)}</text>`
+    +`<text x="${X(r.corte).toFixed(1)}" y="${H-4}" fill="var(--dim)" font-size="7.5" text-anchor="end">${fadClock(r.corte)}</text>`
+    +`<text x="${X(r.tmin).toFixed(1)}" y="${(Y(r.minA)-5).toFixed(1)}" fill="${FADCOL[r.lvl]}" font-size="7.5" text-anchor="middle">pior ${r.minA}</text>`
+    +`</svg>`;
 }
 function renderFadiga(d,host){
   const r=fadAssess(d);
-  if(!r){host.innerHTML='<div class="confnote">Preencha apresentação e corte para estimar a fadiga.</div>';return;}
+  if(!r){host.innerHTML='<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Falta a <b>apresentação</b> e/ou o <b>corte dos motores</b>. Volte um passo, preencha os dois horários e toque em <b>Conferir agora</b> — aí a curva de alerta aparece aqui.</div>';return;}
   const dur=r.corte-r.apres, am=((r.apres%24)+24)%24, cm=((r.corte%24)+24)%24;
   let wocl=false;for(let t=r.apres;t<=r.corte;t+=0.25){const x=((t%24)+24)%24;if(x>=2&&x<6){wocl=true;break;}}
   const flags=[];
@@ -907,6 +942,7 @@ function renderFadiga(d,host){
   if(r.sleep<6)flags.push(['Sono estimado curto (~'+r.sleep.toFixed(1).replace('.0','')+'h)','']);
   if(d.origin==='sobreaviso')flags.push(['Início após sobreaviso','w']);
   const fh=flags.map(f=>`<span class="fad-flag ${f[1]}">${f[0]}</span>`).join('')||'<span class="fad-flag" style="background:rgba(155,176,196,.1);border-color:var(--line);color:var(--dim)">sem fatores de risco destacados</span>';
+  const chart=fadChart(r);
   host.innerHTML=`
     <div class="confnote">Estimativa <b>indicativa</b> (modelo de três processos: sono + ritmo circadiano + inércia). Considera <b>uma noite normal de sono</b> antes desta jornada — o acúmulo do mês inteiro entra com a leitura real no backend. Não é FRMS certificado nem mede o seu estado real.</div>
     <div class="fad-big">
@@ -917,6 +953,8 @@ function renderFadiga(d,host){
         <div style="display:flex;justify-content:space-between;font-size:0.52rem;color:var(--dim)"><span>0</span><span>65</span><span>77,5</span><span>100</span></div>
       </div>
     </div>
+    <div style="font-size:0.6rem;color:var(--dim);margin-top:6px">Alerta estimado ao longo da jornada (quanto mais alto, melhor)</div>
+    ${chart}
     <div class="fad-row">
       <div class="fad-cell"><div class="l">Apres. ${fadClock(r.apres)}</div><div class="v" style="color:${FADCOL[fadLevel(r.aApres)]}">${Math.round(r.aApres)}</div></div>
       <div class="fad-cell"><div class="l">Corte ${fadClock(r.corte)}</div><div class="v" style="color:${FADCOL[fadLevel(r.aCorte)]}">${Math.round(r.aCorte)}</div></div>
