@@ -234,14 +234,16 @@
             <div><div class="tn">Ferramentas</div><div class="td">Soma de horas, passe livre, ANAC, voos</div></div>
           </button>
         </div>
-        <div class="sectitle">Análise de fadiga</div>
-        <button class="tile wide gold" onclick="cfWantFad=true;go('conferir')">
-          <div class="ic">🌙</div><div class="tx"><div class="tn">Analisar fadiga da escala</div><div class="td">Alerta previsto nas decolagens e pousos — ao lado da conformidade</div></div>
-        </button>
-        <div class="sectitle">No pernoite</div>
-        <button class="tile wide" onclick="go('pernoite')">
-          <div class="ic">📍</div><div class="tx"><div class="tn">Pernoite — o que tem por perto</div><div class="td">Comer, mercado, farmácia e café perto de você ou da cidade da escala</div></div>
-        </button>
+        <div class="grid" style="margin-top:10px">
+          <button class="tile gold" onclick="cfWantFad=true;go('conferir')">
+            <div class="ic">🌙</div>
+            <div><div class="tn">Analisar fadiga</div><div class="td">Alerta previsto nas decolagens e pousos</div></div>
+          </button>
+          <button class="tile" onclick="go('pernoite')">
+            <div class="ic">📍</div>
+            <div><div class="tn">Pernoite</div><div class="td">Comida, mercado e farmácia por perto</div></div>
+          </button>
+        </div>
         <div class="sectitle">Sobre</div>
         <button class="tile wide" onclick="go('fontes')">
           <div class="ic">📚</div><div class="tx"><div class="tn">De onde vêm as respostas</div><div class="td">As fontes que o CrewLex consulta</div></div>
@@ -800,15 +802,16 @@ async function ask(){
   try{
     const r=await fetch("/api/perguntar",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({pergunta:q,empresa:empresa,funcao:funcao})});
-    if(!r.ok)throw new Error("status "+r.status);
-    const d=await r.json();
-    const cls=(d.encontrou===false)?"warn":"ok";
-    const fontes=(d.fontes&&d.fontes.length)?`<div class="meta"><div class="r"><span class="l">Fontes</span><span class="v s">${d.fontes.map(f=>escHtml((f.fonte||"")+(f.identificador?(" "+f.identificador):""))).join("  ·  ")}</span></div></div>`:"";
-    a.innerHTML=`<div class="ans ${cls}"><div class="tx">${fmtAns(d.resposta||"")}</div>${fontes}</div>`;
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){
+      a.innerHTML=`<div class="ans bad"><div class="tx" style="padding:13px">⚠️ <b>Motor retornou erro ${r.status}</b><br>${escHtml(d.erro||"(sem mensagem)")}<br><span style="color:var(--dim);font-size:0.85em">${escHtml(d.detalhe||"")}</span></div></div>`;
+    }else{
+      const cls=(d.encontrou===false)?"warn":"ok";
+      const fontes=(d.fontes&&d.fontes.length)?`<div class="meta"><div class="r"><span class="l">Fontes</span><span class="v s">${d.fontes.map(f=>escHtml((f.fonte||"")+(f.identificador?(" "+f.identificador):""))).join("  ·  ")}</span></div></div>`:"";
+      a.innerHTML=`<div class="ans ${cls}"><div class="tx">${fmtAns(d.resposta||"")}</div>${fontes}</div>`;
+    }
   }catch(e){
-    const bi=localMatch(q);
-    if(bi>=0){a.innerHTML=qaHTML(QA[bi]);}
-    else{a.innerHTML=`<div class="ans"><div class="tx" style="padding:13px">Não consegui falar com o motor de consulta agora. Se você abriu o app fora do Vercel, o "Perguntar" online não está disponível aqui — use a URL do app no Vercel, ou toque numa pergunta de exemplo acima.</div></div>`;}
+    a.innerHTML=`<div class="ans bad"><div class="tx" style="padding:13px">⚠️ <b>Não consegui falar com o motor</b><br><span style="color:var(--dim);font-size:0.85em">${escHtml(e&&e.message?e.message:String(e))}</span><br>Se você abriu o app fora do Vercel, o "Perguntar" online não está disponível aqui.</div></div>`;
   }
   const last=th.lastElementChild;if(last)last.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
