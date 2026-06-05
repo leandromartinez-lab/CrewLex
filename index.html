@@ -18,9 +18,9 @@
   .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 14px}
   .topbar .back{background:var(--navy2);border:1px solid var(--line);color:var(--gold);width:34px;height:34px;border-radius:9px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:none;align-items:center;justify-content:center}
   .topbar.sub .back{display:flex}
-  .logo{width:60px;height:60px;border-radius:50%;background:#f4f1ea;padding:2px;flex-shrink:0}
+  .logo{width:74px;height:74px;border-radius:50%;background:#f4f1ea;padding:2px;flex-shrink:0}
   .logo img{width:100%;height:100%;border-radius:50%;display:block}
-  .topbar h1{font-size:1.5rem;font-weight:600;letter-spacing:-0.5px}
+  .topbar h1{font-size:1.75rem;font-weight:600;letter-spacing:-0.5px}
   .topbar h1 .x{color:var(--gold)}
   .topbar .ttl{font-size:0.95rem;font-weight:600}
   .topbar .sb{font-size:0.66rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
@@ -32,15 +32,15 @@
 
   /* HOME */
   .hero{background:linear-gradient(135deg,var(--navy2),#10283f);border:1px solid var(--line);border-radius:16px;padding:24px 22px;margin-bottom:18px}
-  .hero .greet{font-size:0.76rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
-  .hero .head{font-size:1.3rem;margin-top:8px;line-height:1.4}
+  .hero .greet{font-size:0.84rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
+  .hero .head{font-size:1.5rem;margin-top:8px;line-height:1.35}
   .hero .head b{color:var(--gold)}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .tile{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:20px 18px;cursor:pointer;transition:.15s;text-align:left;min-height:158px;display:flex;flex-direction:column;justify-content:space-between}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .tile{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:18px 16px;cursor:pointer;transition:.15s;text-align:left;min-height:138px;display:flex;flex-direction:column;justify-content:space-between}
   .tile:active{transform:scale(.97);border-color:var(--gold)}
   .tile .ic{font-size:2.3rem}
-  .tile .tn{font-size:1.02rem;font-weight:600;margin-top:12px}
-  .tile .td{font-size:0.72rem;color:var(--dim);margin-top:4px;line-height:1.45}
+  .tile .tn{font-size:1.16rem;font-weight:600;margin-top:10px}
+  .tile .td{font-size:0.82rem;color:var(--dim);margin-top:5px;line-height:1.4}
   .tile.wide{grid-column:1/3;flex-direction:row;align-items:center;gap:14px;min-height:auto}
   .tile.wide .ic{font-size:1.8rem}
   .tile.wide .tx{flex:1}
@@ -320,7 +320,18 @@
         <button class="tile wide" onclick="go('fontes')">
           <div class="ic">📚</div><div class="tx"><div class="tn">De onde vêm as respostas</div><div class="td">As fontes que o CrewLex consulta</div></div>
         </button>
-        <div class="disc">CrewLex · protótipo navegável. As respostas citam a fonte. Não substitui a escala oficial nem orientação jurídica/sindical.</div>
+                <div class="sectitle">Fale com a equipe</div>
+        <div style="background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:18px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="font-size:1.8rem">✉️</div>
+            <div><div style="font-size:1.08rem;font-weight:600">Sugestões ou dúvidas</div>
+              <div style="font-size:0.8rem;color:var(--dim);margin-top:3px;line-height:1.4">Sua mensagem vai direto para a equipe do CrewLex.</div></div>
+          </div>
+          <textarea id="fb-msg" rows="3" placeholder="Escreva sua sugestão, dúvida ou o que achou do app…" style="width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px;font-size:0.92rem;font-family:inherit;resize:vertical"></textarea>
+          <button id="fb-btn" onclick="enviarFeedback()" style="width:100%;margin-top:12px;background:var(--gold);color:#1a1300;border:none;border-radius:10px;padding:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Enviar</button>
+          <div id="fb-status" style="font-size:0.76rem;color:var(--dim);margin-top:10px;min-height:1em"></div>
+        </div>
+        <div class="disc">CrewLex · as respostas citam a fonte. Não substitui a escala oficial, nem orientação jurídica ou sindical.</div>
       </div>
 
       <!-- CONFERIR -->
@@ -545,6 +556,22 @@ async function cxSignup(){
   btn.disabled=false; btn.textContent='Criar conta e entrar';
 }
 async function cxLogout(){ try{ if(cxSB) await cxSB.auth.signOut(); }catch(e){} CX_TOKEN=null; CX_USER=null; CX_PLANO='free'; cxShowLogin(); cxGateShow(); }
+async function enviarFeedback(){
+  const ta=document.getElementById('fb-msg'), st=document.getElementById('fb-status'), btn=document.getElementById('fb-btn');
+  const msg=((ta&&ta.value)||'').trim();
+  if(!msg){ if(st){st.style.color='var(--yellow)'; st.textContent='Escreva sua mensagem antes de enviar.';} return; }
+  const empresa=(document.getElementById('ctx_empresa')||{}).value||'';
+  const funcao=(document.getElementById('ctx_funcao')||{}).value||'';
+  if(btn){ btn.disabled=true; btn.textContent='Enviando…'; }
+  if(st){ st.style.color='var(--dim)'; st.textContent=''; }
+  try{
+    const r=await fetch('/api/feedback',{method:'POST',headers:cxHeaders(),body:JSON.stringify({mensagem:msg,empresa:empresa,funcao:funcao})});
+    if(r.ok){ if(ta) ta.value=''; if(st){ st.style.color='var(--green)'; st.textContent='Mensagem enviada. Obrigado pelo retorno!'; } }
+    else if(r.status===401){ if(st){ st.style.color='var(--red)'; st.textContent='Sua sessão expirou — faça login de novo.'; } }
+    else { if(st){ st.style.color='var(--red)'; st.textContent='Não consegui enviar agora. Tente novamente em instantes.'; } }
+  }catch(e){ if(st){ st.style.color='var(--red)'; st.textContent='Falha ao enviar. Tente novamente.'; } }
+  if(btn){ btn.disabled=false; btn.textContent='Enviar'; }
+}
 (async function cxInit(){
   if(!cxSB){ cxGateShow(); return; }
   try{ const {data}=await cxSB.auth.getSession(); if(data&&data.session){ await cxOnLogged(data.session); } else { cxGateShow(); } }catch(e){ cxGateShow(); }
@@ -557,11 +584,12 @@ const TITLES={home:null,conferir:["Conferir escala","upload e laudo"],consultar:
 const TABMAP={home:"tab-home",conferir:"tab-conferir",consultar:"tab-consultar",motor:"tab-home",fontes:"tab-home",ferramentas:"tab-ferramentas",pernoite:"tab-home"};
 
 /* ===== FASE 2 — backend (extração real + contribuição anônima) ===== */
-const CREWLEX_BACKEND=""; // ex.: "https://crewlex.vercel.app" — VAZIO = modo protótipo (sem backend)
+const CREWLEX_BACKEND=""; // ex.: "https://crewlex.vercel.app" — VAZIO = mesma origem (/api/...)
+const CF_REAL=true; // true = lê a escala de verdade (IA de visão) via /api/extrair
 let cfFileB64=null, cfFileMime=null, cfConsentEstudo=false, cfEmpresa=null;
 
 async function crewlexExtrair(){
-  const r=await fetch(CREWLEX_BACKEND+"/api/extrair",{method:"POST",headers:{"Content-Type":"application/json"},
+  const r=await fetch(CREWLEX_BACKEND+"/api/extrair",{method:"POST",headers:cxHeaders(),
     body:JSON.stringify({imagem_base64:cfFileB64, mime:cfFileMime})});
   if(!r.ok) throw new Error("extrair "+r.status);
   return await r.json();
@@ -773,7 +801,7 @@ function cfFile(input){
     <div style="color:var(--ink);margin-top:3px;word-break:break-all">${f.name}</div>
     <div style="color:var(--dim);font-size:0.66rem">${tam}</div>
     <button class="btn" style="margin-top:10px" onclick="cfPick(cfTipo)">Continuar para conferência</button>
-    <div style="color:var(--dim);font-size:0.62rem;margin-top:8px;line-height:1.5">A leitura automática do arquivo entra na próxima fase (IA de visão no backend). Por enquanto, na próxima tela você confere e ajusta os dados.</div>
+    <div style="color:var(--dim);font-size:0.62rem;margin-top:8px;line-height:1.5">A IA vai ler seu arquivo e preencher os dados na próxima tela para você conferir e ajustar.</div>
   </div>`;
 }
 function cfPick(tipo){
@@ -783,10 +811,10 @@ function cfPick(tipo){
       <div class="ln">› identificando empresa e função…</div><div class="ln">› extraindo apresentação e cortes…</div>
       <div class="ln">› contando etapas e pousos…</div><div class="ln">› detectando madrugadas…</div>
       <div class="ln">› preparando para sua conferência…</div></div></div>`;
-  if(CREWLEX_BACKEND && cfFileB64){
+  if(CF_REAL && cfFileB64){
     crewlexExtrair()
       .then(j=>cfRenderConferencia(jornadaToPre(j), (j&&j.eh_escala===false)?"O arquivo não parece uma escala — confira/preencha manualmente.":null))
-      .catch(()=>cfRenderConferencia(CEN[tipo], "Leitura automática indisponível — confira/preencha manualmente."));
+      .catch(()=>cfRenderConferencia({}, "Leitura automática indisponível agora — confira/preencha manualmente."));
   }else{
     setTimeout(()=>cfRenderConferencia(CEN[tipo], null), 1700);
   }
@@ -809,7 +837,7 @@ function cfRenderConferencia(c, aviso){
       <div class="seg" id="sg-aclim"><button data-v="aclimatado" class="sel" onclick="segPick('aclim',this)">Aclimatado</button><button data-v="desconhecido" onclick="segPick('aclim',this)">Estado desconhecido</button></div>
 
       <div class="read-hd">2 · Dados da jornada — confira e ajuste</div>
-      <div class="confnote">${CREWLEX_BACKEND ? '⚠️ Confira os dados que a IA leu da sua escala e corrija se algum estiver errado.' : 'Modo demonstração: estes são valores de <b>exemplo</b> — o app ainda <b>não está lendo o seu arquivo</b>. A leitura automática (escala inteira, linha por linha) entra com o backend. Por enquanto, digite os dados de <b>uma jornada</b> da sua escala para ver o parecer real dela.'}</div>
+      <div class="confnote">${CF_REAL ? '⚠️ Confira os dados que a IA leu da sua escala e corrija se algum estiver errado antes de conferir.' : 'Modo demonstração: valores de exemplo.'}</div>
       <div class="read-card"><span class="rl">Apresentação</span><input id="c_apres" type="time"></div>
       <div class="read-card"><span class="rl">Corte dos motores</span><input id="c_corte" type="time"></div>
       <div class="read-card"><span class="rl">Pousos / etapas</span><input id="c_pousos" type="number" min="1" max="9" style="width:64px"></div>
