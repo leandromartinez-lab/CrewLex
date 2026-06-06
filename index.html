@@ -934,6 +934,17 @@ function buildLaudo(d){
   cards.push({nm:"Jornada de trabalho"+dataTxt,cl,vd:cl==="bad"?"Violação":cl==="warn"?"No limite":"Conforme",
     dt:`Apurada <b>${fmtH(j.durH)}</b> (c/ 30min pós-corte). Limite <b>${fmtH(lim)}</b>.${faixaTxt}${aclimTxt} Margem <b>${fmtH(marg)}</b>.`,
     s:baseFonte,cf});
+  if(cl==="bad"){
+    const overMin=Math.round((j.durH-lim)*60), dentro=overMin<=60;
+    cards.push({nm:"Ampliação de jornada — Art. 40",cl:dentro?"warn":"bad",vd:dentro?"Justificar":"Excede 60 min",
+      dt:`Sua jornada passou <b>${overMin} min</b> do limite. `
+        +(dentro?`A Lei permite ampliar em <b>até 60 min</b>, a critério <b>exclusivo do comandante</b>, em um destes casos. Escolha o que se aplica para ter a justificativa pronta:`:`Isso passa dos <b>60 min</b> que o art. 40 permite ampliar — a ampliação cobre <b>no máximo 60 min</b>; o que exceder disso <b>não tem amparo</b> nessa regra. Ainda assim, registre o motivo:`)
+        +`<select id="art40-sel" onchange="art40Pick(this)" style="width:100%;margin-top:10px"><option value="">— escolha o motivo —</option><option value="I">I · sem acomodações p/ repouso em escala regular</option><option value="II">II · espera longa fora da base (meteo / manutenção)</option><option value="III">III · imperiosa necessidade (catástrofe / infraestrutura)</option></select>`
+        +`<div id="art40-just" style="margin-top:8px"></div>`
+        +`<div style="font-size:0.62rem;color:var(--yellow);margin-top:10px;line-height:1.5">⚠ A hora de ampliação deve considerar o <b>aeroporto de alternativa</b> no planejamento.</div>`
+        +`<div style="font-size:0.62rem;color:var(--dim);margin-top:6px;line-height:1.5">Comunique ao empregador em até <b>24h</b> após a viagem; ele informa a ANAC em <b>15 dias</b> (parágrafo único).</div>`,
+      s:"Lei 13.475/2017, art. 40",cf:"alta"});
+  }
   }
 
   // POUSOS — 5 é permitido c/ +2h de repouso (não é violação automática)
@@ -968,6 +979,8 @@ function renderLaudo(d,host){
   host.innerHTML=h;
 }
 
+var ART40={I:'inexistência, em local de escala regular, de acomodações apropriadas para o repouso da tripulação e dos passageiros',II:'espera demasiadamente longa, fora da base contratual, em local de espera regular intermediária, ocasionada por condições meteorológicas desfavoráveis e trabalho de manutenção não programada',III:'por imperiosa necessidade — catástrofe ou problema de infraestrutura que não configure falha ou falta administrativa da empresa'};
+function art40Pick(s){var o=s.nextElementSibling;if(!o)return;var k=s.value;if(!k){o.innerHTML='';return;}o.innerHTML='<div style="background:var(--navy);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:0.66rem;line-height:1.5;color:var(--ink)"><span style="color:var(--gold);font-weight:600">Justificativa:</span> Jornada ampliada nos termos do art. 40, '+k+', da Lei 13.475/2017 — '+ART40[k]+'.</div>';}
 function runMotor(){
   const d={trip:m_trip.value,origin:m_origin.value,apres:m_apres.value,corte:m_corte.value,pousos:parseInt(m_pousos.value)||1,madrugada:"nao",data:fmtData(m_data.value)};
   renderLaudo(d,document.getElementById("m-out"));
@@ -1141,17 +1154,32 @@ function cfDetRender(){
   renderFadiga(cfDet, document.getElementById('cf-fad'));
 }
 function fadBarChart(bars){
-  const W=320,H=120,padL=8,padR=8,padT=10,padB=14;
+  const W=340,H=140,padL=30,padR=8,padT=10,padB=24;
   const n=bars.length, innerW=W-padL-padR, innerH=H-padT-padB;
   const Y=function(a){return padT+(1-(Math.max(0,Math.min(100,a))/100))*innerH;};
-  const y0=Y(0), y65=Y(65), y775=Y(77.5), y100=Y(100);
+  const y0=Y(0), y65=Y(65), y775=Y(77.5), y100=Y(100), yMid=(padT+innerH/2);
   const gap=n>20?1:2, bw=Math.max(3,(innerW-(n-1)*gap)/n);
   let rects="";
   bars.forEach(function(b,k){
     const x=padL+k*(bw+gap);
     const c=b.fp.lvl==='g'?'ok':b.fp.lvl==='y'?'warn':'bad';
     const yTop=Y(b.fp.minA);
-    rects+='<rect x="'+x.toFixed(1)+'" y="'+yTop.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(y0-yTop).toFixed(1)+'" rx="1" fill="'+badgeFg(c)+'" opacity="0.9" style="cursor:pointer" onclick="cfPickJornada('+b.i+')"><title>'+(b.data?fmtData(b.data):'jornada')+' · alerta '+b.fp.minA+'</title></rect>';
+    rects+='<rect x="'+x.toFixed(1)+'" y="'+yTop.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(y0-yTop).toFixed(1)+'" rx="1" fill="'+badgeFg(c)+'" opacity="0.92" style="cursor:pointer" onclick="cfPickJornada('+b.i+')"><title>'+(b.data?fmtData(b.data):'jornada')+' · alerta '+b.fp.minA+'</title></rect>';
+  });
+  // graduação de alerta (eixo Y)
+  let ylab="";
+  [[100,'100'],[75,'75'],[50,'50'],[25,'25']].forEach(function(p){
+    ylab+='<text x="'+(padL-5)+'" y="'+(Y(p[0])+2.5).toFixed(1)+'" fill="var(--dim)" font-size="7" text-anchor="end">'+p[1]+'</text>';
+  });
+  // datas espaçadas (eixo X) — ~6 rótulos pra não poluir
+  const step=Math.max(1,Math.round(n/6));
+  let xlab="";
+  bars.forEach(function(b,k){
+    if(k%step!==0 || !b.data) return;
+    const dd=String(b.data).split('-')[2];
+    if(!dd) return;
+    const x=padL+k*(bw+gap)+bw/2;
+    xlab+='<text x="'+x.toFixed(1)+'" y="'+(H-7)+'" fill="var(--dim)" font-size="7.5" text-anchor="middle">'+(+dd)+'</text>';
   });
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;margin:4px 0" role="img" aria-label="fadiga por jornada no mes">'
     +'<rect x="'+padL+'" y="'+y100.toFixed(1)+'" width="'+innerW+'" height="'+(y775-y100).toFixed(1)+'" fill="var(--green)" opacity="0.07"/>'
@@ -1159,7 +1187,8 @@ function fadBarChart(bars){
     +'<rect x="'+padL+'" y="'+y65.toFixed(1)+'" width="'+innerW+'" height="'+(y0-y65).toFixed(1)+'" fill="var(--red)" opacity="0.07"/>'
     +'<line x1="'+padL+'" y1="'+y775.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y775.toFixed(1)+'" stroke="var(--green)" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>'
     +'<line x1="'+padL+'" y1="'+y65.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y65.toFixed(1)+'" stroke="var(--red)" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>'
-    +rects+'</svg>';
+    +'<text x="9" y="'+yMid.toFixed(1)+'" fill="var(--dim)" font-size="6.5" text-anchor="middle" transform="rotate(-90 9 '+yMid.toFixed(1)+')">ALERTA</text>'
+    +ylab+rects+xlab+'</svg>';
 }
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
@@ -1213,7 +1242,7 @@ function cfRenderResumo(res, err){
     }
   });
   const bars=js.map(function(j,i){return {i:i, data:j.data, fp:jornadaFadPreview(j)};}).filter(function(b){return b.fp;});
-  const chartBlock = bars.length>=2 ? ('<div style="font-size:0.62rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas/vermelhas = jornadas mais cansativas (toque numa barra)</div>'+fadBarChart(bars)) : '';
+  const chartBlock = bars.length>=2 ? ('<div style="font-size:0.62rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas e vermelhas = dias mais cansativos. Eixo: alerta 0–100 (quanto mais alto, melhor).</div>'+fadBarChart(bars)+'<div style="font-size:0.62rem;color:var(--gold);margin:2px 0 4px;line-height:1.5">👆 Toque numa barra (ou numa jornada na lista) para abrir a <b>curva de alerta do dia</b> — mostra quando você fica mais cansado ao longo da jornada.</div>') : '';
   st.innerHTML='<div class="panel"><div class="ph">Resumo da escala'+emp+fun+'</div>'
     +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
     +chartBlock
@@ -1247,6 +1276,7 @@ function fadChart(r){
   const X=t=>padL+((t-t0)/span)*(W-padL-padR);
   const Y=a=>padT+(1-(Math.max(0,Math.min(100,a))/100))*(H-padT-padB);
   const y0=Y(0),y65=Y(65),y775=Y(77.5),y100=Y(100);
+  let hticks="";{const h0=Math.ceil(t0+1e-6),h1=Math.floor(t1-1e-6);for(let h=h0;h<=h1;h++){const xh=X(h);hticks+=`<line x1="${xh.toFixed(1)}" y1="${padT}" x2="${xh.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="var(--line)" stroke-width="0.4" opacity="0.35"/>`;if(Math.abs(h-t0)>0.75&&Math.abs(h-t1)>0.75)hticks+=`<text x="${xh.toFixed(1)}" y="${H-4}" fill="var(--dim)" font-size="6.5" text-anchor="middle">${((h%24)+24)%24}</text>`;}}
   const line=r.samples.map((s,i)=>(i?"L":"M")+X(s.t).toFixed(1)+" "+Y(s.a).toFixed(1)).join(" ");
   const area=line+" L"+X(t1).toFixed(1)+" "+y0.toFixed(1)+" L"+X(t0).toFixed(1)+" "+y0.toFixed(1)+" Z";
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin:4px 0" role="img" aria-label="curva de alerta ao longo da jornada">`
@@ -1257,6 +1287,7 @@ function fadChart(r){
     +`<line x1="${padL}" y1="${y65.toFixed(1)}" x2="${W-padR}" y2="${y65.toFixed(1)}" stroke="var(--red)" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.55"/>`
     +`<text x="${W-padR+2}" y="${(y775+3).toFixed(1)}" fill="var(--dim)" font-size="7">77,5</text>`
     +`<text x="${W-padR+2}" y="${(y65+3).toFixed(1)}" fill="var(--dim)" font-size="7">65</text>`
+    +hticks
     +`<path d="${area}" fill="${FADCOL[r.lvl]}" opacity="0.12"/>`
     +`<path d="${line}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`
     +`<circle cx="${X(r.apres).toFixed(1)}" cy="${Y(r.aApres).toFixed(1)}" r="2.3" fill="var(--ink)"/>`
