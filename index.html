@@ -2,11 +2,12 @@
 <html lang="pt-BR"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CrewLex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{--navy:#0e2238;--navy2:#14304d;--line:#21466b;--gold:#d4a437;--ink:#f4f1ea;--dim:#9bb0c4;--green:#6db58a;--yellow:#e8b84a;--red:#e0685f}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
-  body{background:#06121f;color:var(--ink);font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;line-height:1.5;display:flex;justify-content:center;-webkit-text-size-adjust:100%}
+  body{background:#06121f;color:var(--ink);font-family:'B612 Mono','JetBrains Mono',ui-monospace,Menlo,monospace;line-height:1.5;display:flex;justify-content:center;-webkit-text-size-adjust:100%}
   /* moldura de celular */
   .phone{width:100%;background:var(--navy);min-height:100vh;min-height:100dvh;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
   @media (min-width:1400px){.phone{max-width:900px;box-shadow:0 0 40px rgba(0,0,0,.5)}}
@@ -51,6 +52,44 @@
 
   .sectitle{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:8px}
   .sectitle::before{content:"";width:5px;height:5px;background:var(--gold);border-radius:50%}
+  /* ===== botões quadrados (pushbutton cockpit) ===== */
+  .sqgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sqb{position:relative;aspect-ratio:1/1;cursor:pointer;font-family:inherit;border:1px solid #2c4a6e;border-radius:14px;
+       background:linear-gradient(180deg,#1b2f48,#0d1d31);
+       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:10px 6px 22px;
+       box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -2px 7px rgba(0,0,0,.4),0 3px 6px rgba(0,0,0,.42);
+       transition:transform .08s,box-shadow .08s;color:var(--green)}
+  .sqb:active{transform:translateY(1px);box-shadow:inset 0 2px 7px rgba(0,0,0,.5)}
+  .sqb.soon{color:var(--yellow)}
+  .sqb svg{width:34px;height:34px;stroke:var(--ink);stroke-width:1.55;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .sqb .sl{font-weight:600;letter-spacing:1.2px;font-size:0.82rem;text-transform:uppercase;color:var(--ink);text-align:center;line-height:1.05}
+  .sqb.soon .sl{color:#cdd9e6}
+  .sqb .ss{font-size:0.55rem;letter-spacing:.5px;color:var(--dim);text-transform:uppercase;margin-top:-4px}
+  .sqb .sbar{position:absolute;bottom:9px;left:14px;right:14px;height:7px;border-radius:2px;background-image:radial-gradient(circle,currentColor 1px,transparent 1.5px);background-size:6px 5px;background-position:center}
+  .sqb.rdy .sbar{filter:drop-shadow(0 0 2px rgba(109,181,138,.7))}
+  .sqb.soon .sbar{opacity:.85}
+  /* ===== conversor ===== */
+  .cv-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+  .cv-tabs::-webkit-scrollbar{height:0}
+  .cv-tab{flex:0 0 auto;background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.72rem;letter-spacing:.5px;text-transform:uppercase;padding:8px 12px;border-radius:9px;cursor:pointer}
+  .cv-tab.on{background:linear-gradient(180deg,#1b2f48,#0d1d31);border-color:var(--gold);color:var(--gold)}
+  .cv-inrow{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}
+  .cv-val{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:14px;font-size:1.5rem;font-family:inherit;font-weight:700;width:100%}
+  .cv-sel{background:var(--navy);border:1px solid var(--line);color:var(--gold);border-radius:10px;padding:0 12px;font-size:1rem;font-family:inherit;cursor:pointer}
+  .cv-out{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .cv-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--navy)}
+  .cv-row.dim{color:var(--dim);justify-content:center;font-size:0.8rem}
+  .cv-u{color:var(--dim);font-size:0.82rem;text-transform:uppercase;letter-spacing:.5px}
+  .cv-v{color:var(--ink);font-size:1.15rem;font-weight:700}
+  .cv-note{font-size:0.62rem;color:var(--dim);margin-top:10px;line-height:1.5}
+  /* ===== meteo / FMC ===== */
+  .mt-inrow{display:grid;grid-template-columns:1fr auto;gap:10px}
+  .mt-icao{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:14px;font-size:1.4rem;font-family:inherit;font-weight:700;letter-spacing:3px;width:100%}
+  .mt-hint{font-size:0.66rem;color:var(--dim);margin-top:10px;line-height:1.5}
+  .mt-rep{margin-bottom:14px}
+  .mt-lbl{font-size:0.62rem;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  .fmc{font-family:'B612 Mono',ui-monospace,monospace;color:#7fe0a0;background:#06120c;border:1px solid #14402a;border-radius:8px;padding:13px;font-size:0.86rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;letter-spacing:.3px;margin:0;text-shadow:0 0 6px rgba(127,224,160,.25)}
+  @media print{ .topbar,.tabbar,.statusbar,.btns,.disc{display:none!important} .phone{height:auto!important;min-height:0!important} body,.phone,.screen{background:#fff!important} .fmc{color:#000!important;background:#fff!important;border-color:#999!important;text-shadow:none!important} .mt-lbl{color:#000!important} }
 
   /* botão padrão */
   .btn{background:var(--gold);color:var(--navy);border:none;font-family:inherit;font-weight:600;font-size:0.84rem;padding:12px 18px;border-radius:10px;cursor:pointer;width:100%;letter-spacing:0.3px}
@@ -288,33 +327,17 @@
             <a onclick="cxLogout()" style="color:var(--gold);font-size:.78rem;cursor:pointer;text-decoration:underline">Sair</a>
           </div>
         </div>
-        <div class="grid">
-          <button class="tile gold" onclick="go('conferir')">
-            <div class="ic">🛫</div>
-            <div><div class="tn">Conferir escala</div><div class="td">Confira sua jornada e veja as não conformidades</div></div>
-          </button>
-          <button class="tile" onclick="go('consultar')">
-            <div class="ic">⚖️</div>
-            <div><div class="tn">Perguntar</div><div class="td">Tire dúvidas com base na legislação</div></div>
-          </button>
-          <button class="tile" onclick="go('motor')">
-            <div class="ic">🧮</div>
-            <div><div class="tn">Calcular jornada</div><div class="td">Jornada, repouso e limites na mão</div></div>
-          </button>
-          <button class="tile" onclick="go('ferramentas')">
-            <div class="ic">🧰</div>
-            <div><div class="tn">Ferramentas</div><div class="td">Soma de horas, passe livre, ANAC, voos</div></div>
-          </button>
-        </div>
-        <div class="grid" style="margin-top:10px">
-          <button class="tile gold" onclick="cfWantFad=true;go('conferir')">
-            <div class="ic">🌙</div>
-            <div><div class="tn">Analisar fadiga</div><div class="td">Alerta previsto nas decolagens e pousos</div></div>
-          </button>
-          <button class="tile" onclick="go('pernoite')">
-            <div class="ic">📍</div>
-            <div><div class="tn">Pernoite</div><div class="td">Comida, mercado e farmácia por perto</div></div>
-          </button>
+        <div class="sqgrid">
+          <button class="sqb rdy" onclick="go('conferir')"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4h6v3H9z"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="14" y2="15"/></svg><span class="sl">Escala</span><span class="ss">conferir</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('consultar')"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-4 4z"/><circle cx="9" cy="10" r=".7" fill="currentColor" stroke="none"/><circle cx="12.5" cy="10" r=".7" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r=".7" fill="currentColor" stroke="none"/></svg><span class="sl">Perguntar</span><span class="ss">jurídico</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('motor')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span class="sl">Jornada</span><span class="ss">calcular</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="cfWantFad=true;go('conferir')"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 0116 0"/><line x1="12" y1="16" x2="16" y2="10"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg><span class="sl">Fadiga</span><span class="ss">estimar</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('pernoite')"><svg viewBox="0 0 24 24"><path d="M18 13.5A7 7 0 1110.5 6 5.5 5.5 0 0018 13.5z"/></svg><span class="sl">Pernoite</span><span class="ss">direitos</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="goFerr('ferr-soma')"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="6.5"/><path d="M11 10.3V13l1.9 1.3"/><path d="M17 5v4M15 7h4"/></svg><span class="sl">Soma</span><span class="ss">de horas</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="goFerr('ferr-passe')"><svg viewBox="0 0 24 24"><path d="M4 9a1 1 0 011-1h14a1 1 0 011 1v1.5a1.5 1.5 0 000 3V15a1 1 0 01-1 1H5a1 1 0 01-1-1v-1.5a1.5 1.5 0 000-3z"/><line x1="13" y1="8.5" x2="13" y2="15.5" stroke-dasharray="1.6 1.6"/></svg><span class="sl">Passe livre</span><span class="ss">viagem</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="goFerr('ferr-docs')"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="11" r="2"/><line x1="13" y1="10" x2="17" y2="10"/><line x1="13" y1="13.5" x2="17" y2="13.5"/><path d="M6.4 15.4c.6-1.3 4.1-1.3 4.7 0"/></svg><span class="sl">Documentos</span><span class="ss">anac · sna</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('meteo')"><svg viewBox="0 0 24 24"><path d="M7 18h9a3.5 3.5 0 00.6-7 5 5 0 00-9.7 1.4A3.2 3.2 0 007 18z"/></svg><span class="sl">Meteo</span><span class="ss">metar · taf</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('conversao')"><svg viewBox="0 0 24 24"><path d="M6 9h12l-3-3M18 15H6l3 3"/></svg><span class="sl">Conversão</span><span class="ss">unidades</span><span class="sbar"></span></button>
         </div>
         <div class="sectitle">Sobre</div>
         <button class="tile wide" onclick="go('fontes')">
@@ -390,7 +413,7 @@
 
       <!-- FERRAMENTAS -->
       <div class="view" id="v-ferramentas">
-        <div class="ph" style="margin-bottom:10px">Soma de horas</div>
+        <div class="ph" id="ferr-soma" style="margin-bottom:10px">Soma de horas</div>
         <div class="panel">
           <div style="font-size:0.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Some ou subtraia tempos em HH:MM (ex.: 4:20 + 3:55). Use sinal de menos para subtrair (ex.: -1:30). Aceita decimal (1.5 = 1:30).</div>
           <div id="hm-rows">
@@ -431,7 +454,7 @@
         </div>
         <div class="disc">Abre no FlightRadar24 e no Planespotters, direto da fonte. Bom pra saber se o avião que vem pra você está atrasado ou ainda em outro aeroporto.</div>
 
-        <div class="ph" style="margin:18px 0 10px">Passe livre</div>
+        <div class="ph" id="ferr-passe" style="margin:18px 0 10px">Passe livre</div>
         <div class="pl-grid">
           <button class="pl-btn gol" onclick="ext('https://passelivre.voegol.com.br/')"><span class="pl-co">GOL</span><span class="pl-lb">Passe Livre ›</span></button>
           <button class="pl-btn latam" onclick="ext('https://passelivre.latam.com/')"><span class="pl-co">LATAM</span><span class="pl-lb">Passe Livre ›</span></button>
@@ -450,12 +473,40 @@
         <div class="listitem" onclick="ext('https://www.id90travel.com/')" style="cursor:pointer"><div class="li-t">🏨 ID90 Travel — tarifas e hotéis de tripulante ›</div><div class="li-d">Passagens com desconto e hospedagem para staff</div></div>
         <div class="disc">A lotação de voo <b style="color:var(--ink)">não é informação pública</b> — ela mora nos sistemas de reserva das empresas. Por isso o StaffTraveler funciona na base da comunidade: cada um informa o que vê no sistema da própria companhia. O CrewLex aponta pra essas ferramentas em vez de refazê-las.</div>
 
-        <div class="ph" style="margin:18px 0 10px">Documentos</div>
+        <div class="ph" id="ferr-docs" style="margin:18px 0 10px">Documentos</div>
         <div class="listitem" onclick="ext('https://consultadelicencas.anac.gov.br/consultadelicencas/')" style="cursor:pointer"><div class="li-t">🪪 Habilitação ANAC ›</div><div class="li-d">Consulta com Código ANAC + CPF + data de nascimento</div></div>
         <div class="listitem" onclick="ext('https://sistemas.anac.gov.br/NovaCHT')" style="cursor:pointer"><div class="li-t">📄 CHT Digital (ANAC) ›</div><div class="li-d">Certificado de Habilitação Técnica — login SACI</div></div>
         <div class="listitem" onclick="ext('https://www.aeronautas.org.br/')" style="cursor:pointer"><div class="li-t">🛡️ SNA — Sindicato ›</div><div class="li-d">Carteirinha, notícias e atendimento</div></div>
 
         <div class="disc">Os atalhos abrem os sites oficiais de cada serviço. O CrewLex <b style="color:var(--ink)">não guarda nem digita</b> seu CPF, código ANAC ou senha — você acessa direto no site de cada órgão/empresa, com segurança.</div>
+      </div>
+
+      <!-- EM BREVE (placeholder de ferramenta a desenvolver) -->
+      <div class="view" id="v-embreve"><div class="panel" id="eb-body"></div></div>
+
+      <!-- CONVERSÃO -->
+      <div class="view" id="v-conversao">
+        <div class="cv-tabs" id="cv-tabs"></div>
+        <div class="panel">
+          <div class="cv-inrow">
+            <input id="cv-val" class="cv-val" inputmode="decimal" oninput="cvCalc()" placeholder="0">
+            <select id="cv-from" class="cv-sel" onchange="cvFromChange()"></select>
+          </div>
+          <div id="cv-out" class="cv-out"></div>
+          <div id="cv-note" class="cv-note"></div>
+        </div>
+      </div>
+
+      <!-- METEO (METAR/TAF) -->
+      <div class="view" id="v-meteo">
+        <div class="panel">
+          <div class="mt-inrow">
+            <input id="mt-icao" class="mt-icao" maxlength="4" placeholder="SBGR" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')mtBuscar()">
+            <button class="btn" onclick="mtBuscar()">Buscar</button>
+          </div>
+          <div class="mt-hint">Digite o código <b>ICAO</b> de 4 letras (ex.: SBGR Guarulhos, SBSP Congonhas, SBGL Galeão, SBBR Brasília). Traz o <b>METAR</b> (tempo atual) e o <b>TAF</b> (previsão), direto da fonte oficial.</div>
+        </div>
+        <div id="mt-out"></div>
       </div>
 
       <!-- PERNOITE -->
@@ -580,7 +631,7 @@ async function enviarFeedback(){
 
 const QA=[{"q": "Mudaram minha programação e empurraram minha folga. A empresa tem que pagar?", "tags": ["folga", "indenização", "empurr", "postergad"], "verdict": "Depende de quanto atrasou", "cls": "warn", "body": "O início da folga pode ser <b>postergado em até 4 horas</b> sem indenização. Acima disso, a empresa paga <b>indenização de R$ 700,00</b>. Em casos excepcionais (meteorologia, manutenção não programada, imperiosa necessidade), o atraso pode ir até 12 horas — ultrapassado esse limite, a indenização também é devida. Devida <b>uma vez</b> por sequência de folgas agrupadas.", "src": "ACT Gol cl. 6.4 §1º e §2º", "esfera": "Trabalhista", "conf": "alta", "obs": "Na CCT 25/26 (cl. 3.4.4) o valor é R$ 732,76 — sendo Gol, vale o ACT (R$ 700,00), por ser norma específica da empresa."}, {"q": "Tenho direito a hotel nesse pernoite fora da base?", "tags": ["hotel", "pernoite", "hospedagem", "acomodação"], "verdict": "Sim, em pernoite a serviço", "cls": "ok", "body": "Pernoitando <b>fora da base contratual a serviço</b>, a empresa garante <b>acomodação individual</b> (quarto individual, banheiro privativo, condições de higiene, ruído, temperatura e luminosidade). Se aderiu à base virtual, não há hotel durante repouso/folgas lá gozados — mas pernoite na base contratual <b>entre voos</b> gera hotel, transporte e diárias.", "src": "Lei art. 47 + ACT Gol cl. 8.1 e 5.19 §11", "esfera": "Trabalhista", "conf": "alta", "obs": "Treinamento de SOLO na base não gera hotel; treinamento de VOO com apresentação para voo é jornada — e o pernoite a serviço gera direito a hotel."}, {"q": "Essa jornada de 9h40 está dentro do limite?", "tags": ["jornada", "limite", "9h", "estour"], "verdict": "Não — excede o limite", "cls": "bad", "body": "Para <b>tripulação simples</b> em serviço aéreo regular, o limite de jornada é <b>9 horas</b>. 9h40 <b>ultrapassa</b>. A hora excedente só é admissível como ampliação (art. 40), a critério do comandante e por motivo justificado, remunerada com <b>adicional de 50%</b>.", "src": "Lei art. 36 (Inc. I) + RBAC 117 Ap. A", "esfera": "Segurança + Trabalhista", "conf": "alta", "obs": "Cálculo determinístico — o número sai do motor, não de interpretação."}, {"q": "Fiquei de sobreaviso e não fui acionado. Quanto de repouso tenho?", "tags": ["sobreaviso", "repouso", "acionad"], "verdict": "12 horas", "cls": "ok", "body": "Sobreaviso <b>sem acionamento</b> dá direito a <b>repouso mínimo de 12 horas</b> antes de nova tarefa. A Lei prevê 8h (art. 43 §4º) e o RBAC 10h, mas o ACT e a CCT elevam para <b>12h</b> — prevalece o mais favorável a você.", "src": "ACT Gol cl. 5.13 §4º (CCT 25/26 cl. 3.3.11 §4º)", "esfera": "Trabalhista", "conf": "alta", "obs": "Caso clássico de sobreposição: no trabalhista vence a regra mais protetiva, não a da ANAC."}, {"q": "Posso ser escalado para uma terceira madrugada seguida?", "tags": ["madrugada", "terceira", "consecutiv"], "verdict": "Só como extra em retorno", "cls": "warn", "body": "Limite: <b>2 madrugadas/early starts consecutivos</b>, máx. <b>4 em 168h</b>. A <b>terceira</b> só é possível como <b>tripulante extra</b>, em voo de retorno à base, encerrando a jornada. O ciclo de 168h reinicia com 48h livres. Após 2 seguidas, a apresentação no 3º dia só após as 08h.", "src": "ACT Gol cl. 5.16 + Lei art. 42", "esfera": "Segurança / fadiga", "conf": "alta", "obs": "Na Gol, 'early start' (05h–07h Brasília) conta junto com madrugada. Madrugada = 0h–6h pelo corte de motores."}, {"q": "Quantos dias de licença tenho quando caso?", "tags": ["licença", "casamento", "gala", "casar"], "verdict": "5 dias consecutivos", "cls": "ok", "body": "A CLT prevê 3 dias, mas o acordo <b>ampliou para 5 dias consecutivos</b>. Licença-paternidade: 5 dias, ampliável para <b>20</b> se comunicar a chefia com 60 dias de antecedência.", "src": "ACT Gol cl. 5.6 e 5.7 (amplia CLT art. 473)", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "A empresa pode alterar minha escala sem me consultar?", "tags": ["escala", "alteração", "mudança", "consultar", "anuência"], "verdict": "Só com aviso e só atraso", "cls": "warn", "body": "Sem sua anuência, só vale se comunicada com <b>2h de antecedência</b> (na base) ou <b>1h</b> (fora da base), e desde que seja um <b>atraso</b> da apresentação — <b>nunca um adiantamento</b>.", "src": "RBAC 117 Apêndice B, item (h)", "esfera": "Segurança", "conf": "alta", "obs": "Guarde o print com horário de quando recebeu o aviso."}, {"q": "A empresa pode pôr dia em branco na escala?", "tags": ["branco", "dias", "indefinido"], "verdict": "Não é permitido", "cls": "bad", "body": "A escala deve definir início/término de voo, reserva, sobreaviso e folgas. É <b>vedado</b> consignar horários indefinidos — <b>dias em branco são proibidos</b>.", "src": "Lei art. 26, I e II", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Fui acionado na reserva para um voo. A jornada conta desde quando?", "tags": ["reserva", "acionad", "jornada", "conta"], "verdict": "Desde a apresentação da reserva", "cls": "ok", "body": "A jornada conta <b>a partir da apresentação da reserva</b>, não do voo. E você <b>não precisa</b> dos 30 min de apresentação do voo, pois já se apresentou para a reserva.", "src": "Lei art. 35 §1º", "esfera": "Segurança/Trabalhista", "conf": "alta", "obs": ""}, {"q": "Devo ser pago pela escala publicada ou pela executada?", "tags": ["pagamento", "escala", "publicada", "executada", "remuneração"], "verdict": "A que pagar mais", "cls": "ok", "body": "A empresa paga a escala que refletir a <b>maior remuneração</b> — comparando publicada e executada. Vale inclusive em dias de dispensa médica.", "src": "CCT 25/26 cl. 3.2.5", "esfera": "Trabalhista", "conf": "alta", "obs": "Guarde as duas escalas (publicada e executada)."}, {"q": "Posso ser contratado como aeronauta via PJ?", "tags": ["pj", "pessoa jurídica", "contrato"], "verdict": "Não", "cls": "bad", "body": "A função de tripulante deve ser formalizada por <b>contrato de trabalho</b> direto com o operador. Contratação via PJ não é permitida.", "src": "Lei art. 20, caput", "esfera": "Trabalhista", "conf": "alta", "obs": ""}, {"q": "Entre RBAC, Lei e CCT, qual vence em conflito?", "tags": ["hierarquia", "conflito", "prevalece", "rbac", "cct", "vence"], "verdict": "CCT no topo", "cls": "ok", "body": "Em regra, o <b>RBAC 117 prevalece sobre a Lei</b>, e a <b>CCT prevalece sobre ambos</b>. Na prática: em segurança vence o limite mais restritivo da ANAC; em temas trabalhistas vence a norma mais favorável — geralmente a CCT ou o ACT da empresa.", "src": "Hierarquia: RBAC 117 · Lei 13.475 · CCT", "esfera": "Regra de hierarquia", "conf": "alta", "obs": "É a regra-mãe do CrewLex."}, {"q": "O que é base virtual? Como funciona?", "tags": ["base virtual", "base provisoria", "base provisória", "virtual", "escala direcionada", "base direcionada"], "verdict": "Varia por empresa", "cls": "warn", "body": "<b>Base virtual</b> (base provisória voluntária) é uma base à qual o aeronauta adere <b>voluntariamente</b> para iniciar/terminar viagens, fazer reservas/sobreavisos e gozar folgas ali. <b>As regras mudam conforme a empresa:</b><br><br><b>Azul (ACT Base Virtual, cl. 4ª):</b> adesão voluntária e <b>não</b> é transferência de base contratual (sem indenização nem estabilidade, §1º); segue senioridade e elegibilidade (§2º); folgas contam pro mínimo mensal (§3º), mas <b>sem</b> transporte, hotel e diárias nessas folgas e no repouso anterior (§4º) — só há hotel/diárias se pernoitar na base contratual (§9º); desistência ou encerramento com <b>30 dias</b> (§5º/§6º); o retorno à base contratual depois das folgas é por sua conta e não conta jornada (§10º).<br><br><b>GOL (ACT pilotos 25/26):</b> também prevê base virtual — por exemplo, o reembolso de deslocamento na madrugada (R$ 25 por ocorrência, 00h–05h59) é devido <b>na base virtual</b>, não na contratual (cl. 5.9 §1º). As regras completas de adesão da base virtual da GOL estão no ACT e serão detalhadas quando a base de documentos for ligada.", "src": "ACT Azul cl. 4ª + ACT GOL pilotos cl. 5.9", "esfera": "Trabalhista (varia por empresa)", "conf": "alta", "obs": "Cada empresa tem seu ACT: a base virtual da Azul está detalhada; a da GOL será completada com a base de documentos no backend. Outras empresas podem ter regras próprias."}];
 const CEN={"escala": {"trip": "simples", "origin": "base", "apres": "05:30", "corte": "14:40", "pousos": 5, "madrugada": "nao"}, "print": {"trip": "simples", "origin": "sobreaviso", "apres": "04:15", "corte": "10:30", "pousos": 3, "madrugada": "sim"}};
-const TITLES={home:null,conferir:["Conferir escala","upload e laudo"],consultar:["Perguntar","com base na lei"],motor:["Calcular jornada","motor determinístico"],fontes:["Fontes","de onde vêm as respostas"],ferramentas:["Ferramentas","atalhos e cálculos"],pernoite:["Pernoite","o que tem por perto"]};
+const TITLES={home:null,conferir:["Conferir escala","upload e laudo"],consultar:["Perguntar","com base na lei"],motor:["Calcular jornada","motor determinístico"],fontes:["Fontes","de onde vêm as respostas"],ferramentas:["Ferramentas","atalhos e cálculos"],pernoite:["Pernoite","o que tem por perto"],embreve:["Em breve","em desenvolvimento"],conversao:["Conversão","unidades e câmbio"],meteo:["Meteorologia","METAR e TAF por ICAO"]};
 const TABMAP={home:"tab-home",conferir:"tab-conferir",consultar:"tab-consultar",motor:"tab-home",fontes:"tab-home",ferramentas:"tab-ferramentas",pernoite:"tab-home"};
 
 /* ===== FASE 2 — backend (extração real + contribuição anônima) ===== */
@@ -643,6 +694,86 @@ function go(v){
   document.getElementById('screen').scrollTop=0;
   if(v==='conferir')resetConferir();
   if(v==='pernoite')pnInit();
+  if(v==='conversao')cvInit();
+  if(v==='meteo')mtInit();
+}
+function goFerr(anchorId){ go('ferramentas'); setTimeout(function(){ var el=document.getElementById(anchorId); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'}); },80); }
+function emBreve(nome,desc){ var b=document.getElementById('eb-body'); if(b) b.innerHTML='<div class="ph">'+nome+'</div><div style="color:var(--dim);font-size:0.84rem;line-height:1.6;margin-top:8px">'+desc+'.<br><br>🛠️ Essa ferramenta ainda está em desenvolvimento — em breve disponível aqui no CrewLex.</div>'; TITLES['embreve']=[nome,'em desenvolvimento']; go('embreve'); }
+
+/* ===== CONVERSOR ===== */
+var CONV={
+  dist:{us:{m:1,km:1000,NM:1852,mi:1609.344,ft:0.3048}},
+  vel:{us:{kt:0.514444,'km/h':0.277778,mph:0.44704,'m/s':1}},
+  peso:{us:{kg:1,lb:0.453592,g:0.001,t:1000}},
+  vol:{us:{L:1,'gal US':3.785411784,'gal Imp':4.54609}},
+  press:{us:{hPa:1,inHg:33.8639,mmHg:1.333224,psi:68.9476}}
+};
+var CV_TEMP=['°C','°F','K'];
+var CV_CUR=['BRL','USD','EUR','GBP','ARS','CLP','CHF','JPY'];
+var cvCat='dist', cvRates=null, cvRatesFrom=null;
+function cvInit(){
+  var cats=[['dist','Distância'],['vel','Velocidade'],['temp','Temperatura'],['peso','Peso'],['vol','Volume'],['press','Pressão'],['cur','Moeda']];
+  document.getElementById('cv-tabs').innerHTML=cats.map(function(c){return '<button class="cv-tab" id="cvtab-'+c[0]+'" onclick="cvSetCat(\''+c[0]+'\')">'+c[1]+'</button>';}).join('');
+  cvSetCat(cvCat);
+}
+function cvUnitsFor(cat){ if(cat==='temp')return CV_TEMP; if(cat==='cur')return CV_CUR; return Object.keys(CONV[cat].us); }
+function cvSetCat(cat){
+  cvCat=cat;
+  document.querySelectorAll('.cv-tab').forEach(function(b){b.classList.remove('on');});
+  var t=document.getElementById('cvtab-'+cat); if(t)t.classList.add('on');
+  var units=cvUnitsFor(cat), sel=document.getElementById('cv-from');
+  sel.innerHTML=units.map(function(u){return '<option>'+u+'</option>';}).join('');
+  sel.value = cat==='cur'?'BRL':units[0];
+  document.getElementById('cv-val').value = cat==='temp'?'20':(cat==='cur'?'100':'1');
+  document.getElementById('cv-note').textContent = cat==='cur'?'Câmbio do dia (fonte: open.er-api.com). Precisa de internet.':'Toque numa categoria acima. Funciona offline.';
+  if(cat==='cur'){ document.getElementById('cv-out').innerHTML='<div class="cv-row dim">buscando câmbio…</div>'; cvFetchRates(sel.value, cvCalc); } else cvCalc();
+}
+function cvFromChange(){ if(cvCat==='cur') cvFetchRates(document.getElementById('cv-from').value, cvCalc); else cvCalc(); }
+function cvFmt(n){ if(!isFinite(n))return '—'; var a=Math.abs(n), d=a>=100?2:(a>=1?3:5); return (+n.toFixed(d)).toLocaleString('pt-BR',{maximumFractionDigits:d}); }
+function cvCalc(){
+  var cat=cvCat, val=parseFloat((document.getElementById('cv-val').value||'').replace(',','.')), from=document.getElementById('cv-from').value, out=document.getElementById('cv-out');
+  if(!isFinite(val)){ out.innerHTML='<div class="cv-row dim">digite um valor</div>'; return; }
+  var rows=[];
+  if(cat==='temp'){
+    var c=from==='°C'?val:(from==='°F'?(val-32)*5/9:val-273.15), map={'°C':c,'°F':c*9/5+32,'K':c+273.15};
+    CV_TEMP.forEach(function(u){ if(u!==from)rows.push([u,cvFmt(map[u])]); });
+  }else if(cat==='cur'){
+    if(!cvRates||cvRatesFrom!==from){ out.innerHTML='<div class="cv-row dim">buscando câmbio…</div>'; cvFetchRates(from,cvCalc); return; }
+    CV_CUR.forEach(function(u){ if(u!==from){ var r=cvRates[u]; rows.push([u, r?cvFmt(val*r):'—']); } });
+  }else{
+    var us=CONV[cat].us, base=val*us[from];
+    Object.keys(us).forEach(function(u){ if(u!==from)rows.push([u,cvFmt(base/us[u])]); });
+  }
+  out.innerHTML=rows.map(function(r){return '<div class="cv-row"><span class="cv-u">'+r[0]+'</span><span class="cv-v">'+r[1]+'</span></div>';}).join('');
+}
+function cvFetchRates(from,cb){
+  cvRates=null; cvRatesFrom=from;
+  fetch('https://open.er-api.com/v6/latest/'+from).then(function(r){return r.json();}).then(function(j){
+    cvRates=(j&&j.rates)||{}; cvRatesFrom=from; if(cb)cb();
+  }).catch(function(){ var o=document.getElementById('cv-out'); if(o&&cvCat==='cur')o.innerHTML='<div class="cv-row dim">sem internet pra buscar o câmbio</div>'; });
+}
+/* ===== METEO (METAR/TAF) ===== */
+function mtInit(){ var o=document.getElementById('mt-out'); if(o)o.innerHTML=''; }
+function mtBuscar(){
+  var icao=(document.getElementById('mt-icao').value||'').trim().toUpperCase(), out=document.getElementById('mt-out');
+  if(!/^[A-Z]{4}$/.test(icao)){ out.innerHTML='<div class="confnote">Código ICAO inválido — são 4 letras (ex.: SBGR).</div>'; return; }
+  out.innerHTML='<div class="confnote">Buscando METAR e TAF de <b>'+icao+'</b>…</div>';
+  if(typeof CREWLEX_BACKEND==='undefined' || !CREWLEX_BACKEND){ mtFallback(icao,out,'A fonte ainda não está ligada no app.'); return; }
+  fetch(CREWLEX_BACKEND+'/api/metar?icao='+icao).then(function(r){return r.json();}).then(function(j){
+    if(!j || (!j.metar && !j.taf)){ mtFallback(icao,out,'Sem dados para esse aeródromo.'); return; }
+    mtRender(icao, j.metar||'', j.taf||'', out);
+  }).catch(function(){ mtFallback(icao,out,'Não consegui acessar a fonte agora.'); });
+}
+function mtRender(icao,metar,taf,out){
+  out.innerHTML='<div class="mt-rep"><div class="mt-lbl">METAR · '+icao+'</div><pre class="fmc">'+(metar||'— não disponível')+'</pre></div>'
+   +'<div class="mt-rep"><div class="mt-lbl">TAF · '+icao+'</div><pre class="fmc">'+(taf||'— não disponível')+'</pre></div>'
+   +'<div class="btns"><button class="btn" onclick="window.print()">🖨️ Imprimir</button></div>'
+   +'<div class="disc">Fonte: Aviation Weather Center (NOAA/NWS) — oficial e gratuita.</div>';
+}
+function mtFallback(icao,out,motivo){
+  out.innerHTML='<div class="confnote">'+motivo+' Dá pra abrir direto na fonte oficial:</div>'
+   +'<div class="listitem" onclick="ext(\'https://aviationweather.gov/api/data/metar?ids='+icao+'&format=raw\')" style="cursor:pointer"><div class="li-t">🌦️ METAR '+icao+' (texto) ›</div></div>'
+   +'<div class="listitem" onclick="ext(\'https://aviationweather.gov/api/data/taf?ids='+icao+'&format=raw\')" style="cursor:pointer"><div class="li-t">📄 TAF '+icao+' (texto) ›</div></div>';
 }
 
 /* ===== PERNOITE (utilidade de layover) ===== */
