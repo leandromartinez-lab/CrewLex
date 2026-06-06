@@ -91,8 +91,8 @@ module.exports = async (req, res) => {
     }
 
     const isPdf = mime === 'application/pdf';
-    const INSTR_TXT = 'Acima está o TEXTO extraído de um PDF de escala de aeronauta. O alinhamento em colunas pode ter se perdido na extração — use o conteúdo (datas, códigos, horários, números de voo) e as REGRAS para montar as jornadas. NÃO inclua o campo "etapas": em cada jornada devolva apenas data, apresentacao, corte_motores, num_pousos, atividade, tipo_tripulacao e pernoite. Se o texto estiver ilegível ou embaralhado demais, devolva confianca_geral baixa. Responda APENAS com o JSON compacto, sem texto antes ou depois.';
-    const INSTR_IMG = 'Extraia os dados desta escala conforme as regras. NÃO inclua o campo "etapas": em cada jornada devolva apenas data, apresentacao, corte_motores, num_pousos, atividade, tipo_tripulacao e pernoite. Responda APENAS com o JSON compacto, sem texto antes ou depois.';
+    const INSTR_TXT = 'Acima está o TEXTO extraído de um PDF de escala de aeronauta. O alinhamento em colunas pode ter se perdido na extração — use o conteúdo (datas, códigos, horários, números de voo) e as REGRAS para montar as jornadas. NÃO inclua o array "etapas". Em cada jornada devolva: data, apresentacao, corte_motores, num_pousos, atividade, tipo_tripulacao, pernoite, origem (sigla do aeroporto de partida da 1ª etapa operada) e destino (sigla do aeroporto de chegada da última etapa operada). Se o texto estiver ilegível ou embaralhado demais, devolva confianca_geral baixa. Responda APENAS com o JSON compacto, sem texto antes ou depois.';
+    const INSTR_IMG = 'Extraia os dados desta escala conforme as regras. NÃO inclua o array "etapas". Em cada jornada devolva: data, apresentacao, corte_motores, num_pousos, atividade, tipo_tripulacao, pernoite, origem (sigla do aeroporto de partida da 1ª etapa operada) e destino (sigla do aeroporto de chegada da última etapa operada). Responda APENAS com o JSON compacto, sem texto antes ou depois.';
 
     // ===== CAMINHO RÁPIDO: PDF com texto selecionável -> extrai o texto e usa modelo de TEXTO (rápido) =====
     if (isPdf) {
