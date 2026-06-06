@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LMAeroFit · Plataforma técnica de endurance</title>
+<meta name="description" content="Cinco ferramentas técnicas grátis para atletas brasileiros de endurance: comparador de tênis com 8 modelos, avaliação aerodinâmica de bike com modelagem CdA, plano de race fueling baseado em Jeukendrup e Burke, briefing meteorológico via GPX e debrief pós-treino com análise de aderência.">
+<meta name="robots" content="index, follow, noai, noimageai">
+<meta name="googlebot" content="index, follow">
+<meta name="copyright" content="© 2026 LMAeroFit. Todos os direitos reservados.">
+<meta name="author" content="Leandro Martinez · LMAeroFit">
+
+<!-- Open Graph -->
+<meta property="og:title" content="LMAeroFit · Plataforma técnica de endurance" />
+<meta property="og:description" content="Cinco ferramentas técnicas grátis para atletas brasileiros de endurance. Análise aerodinâmica, nutrição de prova, comparador de tênis e mais." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://lmaerofit.com.br" />
+<meta property="og:locale" content="pt_BR" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="LMAeroFit · Plataforma técnica de endurance" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-0: #0a0c0e;
+    --bg-1: #11151a;
+    --bg-2: #181d23;
+    --bg-3: #232930;
+
+    --ink: #ecedef;
+    --ink-soft: #b0b6bc;
+    --ink-mute: #7a8088;
+    --ink-dim: #4a525a;
+
+    --line: rgba(255,255,255,0.07);
+    --line-strong: rgba(255,255,255,0.14);
+
+    --aero: #5a9c07;
+    --aero-bright: #7ab814;
+    --aero-soft: #4a8005;
+    --aero-glow: rgba(90,156,7,0.22);
+
+    --amber: #f4b942;
+    --signal: #5ab3d6;
+
+    --display: 'Inter Tight', -apple-system, sans-serif;
+    --display-italic: 'Fraunces', Georgia, serif; /* apenas para acentos editoriais em <em> */
+    --body: 'Inter Tight', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --container: 1240px;
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--body);
+    color: var(--ink);
+    background: var(--bg-0);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  .container { max-width: var(--container); margin: 0 auto; padding: 0 32px; }
+  .mono { font-family: var(--mono); font-feature-settings: "tnum" 1; }
+  ::selection { background: var(--aero); color: #0a0c0e; }
+
+  /* ============ NAV ============ */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 22px 0;
+    backdrop-filter: blur(22px) saturate(1.4);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    background: rgba(10,12,14,0.55);
+    border-bottom: 1px solid transparent;
+    transition: all 0.35s var(--ease);
+  }
+  nav.scrolled {
+    padding: 14px 0;
+    background: rgba(10,12,14,0.85);
+    border-bottom-color: var(--line);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    height: 80px;
+  }
+  .logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+  }
+  nav.scrolled .logo { height: 60px; }
+  footer .logo { height: 96px; }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    color: #b8bdc2;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: #fff; }
+
+  .nav-cta { display: flex; align-items: center; gap: 14px; }
+  .btn-nav {
+    background: var(--aero);
+    color: #0a0c0e;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-nav:hover {
+    background: var(--aero-bright);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px var(--aero-glow);
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 140px 0 100px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 1200px 600px at 75% 35%, rgba(90,156,7,0.07), transparent 60%),
+      radial-gradient(ellipse 800px 500px at 15% 75%, rgba(90,179,214,0.03), transparent 50%),
+      var(--bg-0);
+    z-index: 0;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.020) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.020) 1px, transparent 1px);
+    background-size: 96px 96px;
+    mask-image: radial-gradient(ellipse at center, black 25%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 25%, transparent 80%);
+    z-index: 1;
+  }
+  .hero-streams {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .hero-content { max-width: 620px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--aero);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--aero);
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(48px, 7.4vw, 92px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    color: #fff;
+    margin-top: 28px;
+    margin-bottom: 32px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--aero);
+  }
+  .hero p {
+    font-size: 19px;
+    line-height: 1.5;
+    color: #b8bdc2;
+    max-width: 540px;
+    margin-bottom: 44px;
+  }
+
+  /* Email capture inline */
+  .email-form {
+    display: flex;
+    gap: 8px;
+    max-width: 480px;
+    background: var(--bg-1);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 6px;
+    transition: border-color 0.2s;
+  }
+  .email-form:focus-within { border-color: var(--aero); }
+  .email-form input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    padding: 12px 14px;
+    font-family: var(--body);
+    font-size: 15px;
+    outline: none;
+  }
+  .email-form input::placeholder { color: var(--ink-mute); }
+  .email-form button {
+    background: var(--aero);
+    color: #0a0c0e;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .email-form button:hover {
+    background: var(--aero-bright);
+    transform: translateY(-1px);
+  }
+  .email-form button svg { width: 13px; height: 13px; }
+  .email-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-top: 12px;
+    letter-spacing: 0.04em;
+  }
+  .email-note .accent { color: var(--aero); }
+
+  /* Hero panel */
+  .athlete-panel {
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-1), #0d1115);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-xl);
+    padding: 28px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 40px 80px -20px rgba(0,0,0,0.5);
+  }
+  .athlete-panel::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 22%; right: 22%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--aero), transparent);
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .panel-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--aero);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .panel-status .dot {
+    width: 6px; height: 6px;
+    background: var(--aero);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--aero);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  .state-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+  }
+  .state-num {
+    font-family: var(--display);
+    font-size: 96px;
+    font-weight: 800;
+    color: var(--aero);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+  }
+  .state-info { text-align: right; flex: 1; padding-left: 20px; }
+  .state-name {
+    font-family: var(--display);
+    font-size: 22px;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin-bottom: 6px;
+  }
+  .state-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    line-height: 1.5;
+  }
+  .flow-bars { display: flex; gap: 4px; margin-bottom: 22px; }
+  .flow-bar {
+    flex: 1; height: 3px;
+    background: var(--bg-3);
+    border-radius: 2px;
+  }
+  .flow-bar.on { background: var(--aero); box-shadow: 0 0 6px var(--aero-glow); }
+
+  .panel-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .pm { background: var(--bg-2); padding: 14px 16px; }
+  .pm-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pm-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: #fff;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .pm-value .u {
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-left: 3px;
+    font-weight: 400;
+  }
+  .pm-trend {
+    font-family: var(--mono);
+    font-size: 10px;
+    margin-top: 6px;
+    color: var(--aero);
+  }
+  .pm-trend.warn { color: var(--amber); }
+
+  /* ============ TRUST STRIP ============ */
+  .trust {
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-1);
+  }
+  .trust-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 56px;
+    flex-wrap: wrap;
+  }
+  .trust-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .trust-logos {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .trust-logo {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+    transition: color 0.2s;
+  }
+  .trust-logo:hover { color: var(--aero); }
+
+  /* ============ SECTION ============ */
+  section.block { padding: 140px 0; position: relative; }
+  .section-head { max-width: 760px; margin-bottom: 72px; }
+  .section-head h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(40px, 5.6vw, 66px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-top: 22px;
+    margin-bottom: 22px;
+  }
+  .section-head h2 em {
+    font-style: italic;
+    color: var(--aero);
+    font-weight: 300;
+  }
+  .section-head p {
+    font-size: 19px;
+    color: #b8bdc2;
+    line-height: 1.5;
+    max-width: 600px;
+  }
+
+  /* ============ LOOP ============ */
+  .loop-section {
+    background: linear-gradient(180deg, var(--bg-0), var(--bg-1));
+    border-top: 1px solid var(--line);
+  }
+  .loop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+  .loop-card {
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    padding: 32px 28px;
+    transition: all 0.4s var(--ease);
+  }
+  .loop-card:hover {
+    border-color: rgba(90,156,7,0.4);
+    transform: translateY(-2px);
+  }
+  .loop-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--aero);
+    letter-spacing: 0.16em;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .loop-num::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--aero);
+    border-radius: 50%;
+  }
+  .loop-card h3 {
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .loop-card h3 em { font-style: italic; color: var(--aero); font-weight: 300; }
+  .loop-card p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+  .loop-pills {
+    display: flex; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .loop-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .loop-pill.live {
+    color: var(--aero);
+    border-color: rgba(90,156,7,0.3);
+    background: rgba(90,156,7,0.05);
+  }
+
+  /* ============ TOOLS ============ */
+  .tools-section {
+    background: var(--bg-0);
+    border-top: 1px solid var(--line);
+  }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .tools-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .tool-card {
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    padding: 32px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+  .tool-card:hover {
+    border-color: var(--aero);
+    transform: translateY(-2px);
+  }
+  .tool-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--aero);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .tool-name {
+    font-family: var(--display);
+    font-size: 26px;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    line-height: 1.15;
+  }
+  .tool-name em { font-style: italic; color: var(--aero); font-weight: 300; }
+  .tool-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 24px;
+    flex: 1;
+  }
+  .tool-cta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--aero);
+    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .tool-cta svg { width: 12px; height: 12px; transition: transform 0.2s; }
+  .tool-card:hover .tool-cta svg { transform: translateX(4px); }
+
+  /* ============ CTA SECTION (EMAIL) ============ */
+  .cta-section {
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    border-top: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(90,156,7,0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .cta-card {
+    background: linear-gradient(180deg, var(--bg-1), #0d1115);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-xl);
+    padding: 64px 56px;
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 28%; right: 28%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--aero), transparent);
+  }
+  .cta-card .eyebrow { justify-content: center; margin-bottom: 22px; }
+  .cta-card h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 22px;
+  }
+  .cta-card h2 em { font-style: italic; color: var(--aero); font-weight: 300; }
+  .cta-card p {
+    color: var(--ink-soft);
+    font-size: 17px;
+    line-height: 1.5;
+    margin-bottom: 36px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-card .email-form { margin: 0 auto; }
+  .cta-card .email-note { text-align: center; }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: var(--bg-0);
+    border-top: 1px solid var(--line);
+    padding: 80px 0 32px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 60px;
+  }
+  .footer-brand .logo { font-size: 28px; margin-bottom: 18px; display: inline-block; }
+  .footer-brand p {
+    color: #8a9098;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 340px;
+  }
+  .footer-social {
+    display: flex; gap: 14px;
+    margin-top: 20px;
+  }
+  .footer-social a {
+    width: 36px; height: 36px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .footer-social a:hover {
+    border-color: var(--aero);
+    color: var(--aero);
+  }
+  .footer-social svg { width: 16px; height: 16px; }
+  .footer-col h5 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 12px; }
+  .footer-col a {
+    color: #b8bdc2;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--aero); }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--aero);
+    color: #0a0c0e;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(90,156,7,0.3);
+    transition: transform 0.4s var(--ease);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast svg { width: 16px; height: 16px; }
+
+  /* ============ REVEAL ============ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal.d1 { transition-delay: 0.08s; }
+  .reveal.d2 { transition-delay: 0.16s; }
+  .reveal.d3 { transition-delay: 0.24s; }
+  .reveal.d4 { transition-delay: 0.32s; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 60px; }
+    .loop-grid, .tools-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 720px) {
+    .container { padding: 0 20px; }
+    .nav-links { display: none; }
+    section.block { padding: 80px 0; }
+    .hero { padding: 110px 0 60px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+    .footer-bottom { flex-direction: column; gap: 12px; }
+    .cta-card { padding: 40px 28px; }
+    .email-form { flex-direction: column; padding: 8px; }
+    .email-form button { width: 100%; justify-content: center; }
+  }
+
+  /* Acento editorial em itálicos dentro de títulos */
+  h1 em, h2 em, .hero h1 em, .section-head h2 em,
+  .loop-card h3 em, .tool-name em, .cta-card h2 em {
+    font-family: var(--display-italic);
+    font-weight: 300;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo">
+      <img src="./assets/lmaerofit-logo.png" alt="LMAeroFit" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="#loop">Como funciona</a></li>
+      <li><a href="#tools">Ferramentas</a></li>
+      <li><a href="#blog">Notícias</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#cta" class="btn-nav">
+        Entrar na lista
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <svg class="hero-streams" viewBox="0 0 1440 800" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="streamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#5a9c07" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#5a9c07" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#5a9c07" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M-100 220 Q 400 200 720 240 T 1540 260" stroke="url(#streamGrad)" stroke-width="0.7" fill="none"/>
+    <path d="M-100 340 Q 500 300 720 360 T 1540 380" stroke="url(#streamGrad)" stroke-width="0.7" fill="none"/>
+    <path d="M-100 480 Q 600 460 720 520 T 1540 500" stroke="url(#streamGrad)" stroke-width="0.7" fill="none"/>
+    <path d="M-100 620 Q 500 600 720 660 T 1540 640" stroke="url(#streamGrad)" stroke-width="0.7" fill="none"/>
+  </svg>
+
+  <div class="container hero-inner">
+    <div class="hero-content">
+      <span class="eyebrow reveal">PLATAFORMA TÉCNICA DE ENDURANCE</span>
+      <h1 class="reveal d1">Treino, nutrição e prova.<br><em>Um sistema só.</em></h1>
+      <p class="reveal d2">Cinco ferramentas técnicas no navegador para atletas brasileiros de endurance: análise aerodinâmica, nutrição de prova, recomendação de tênis, briefing meteorológico e debrief de treino. Grátis, sem cadastro.</p>
+
+      <form class="email-form reveal d3" id="email-form-hero" action="https://formspree.io/f/mpqnydll" method="POST">
+        <input type="hidden" name="source" value="hero">
+        <input type="hidden" name="_subject" value="Novo lead LMAeroFit (Hero)">
+        <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email" />
+        <button type="submit">
+          Entrar na lista
+          <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6.5h7M7 3l3.5 3.5L7 10"/></svg>
+        </button>
+      </form>
+      <div class="email-note reveal d4"><span class="accent">Grátis · sem spam</span> · receba conteúdo técnico semanal e novidades das ferramentas</div>
+    </div>
+
+    <div class="athlete-panel reveal d4">
+      <div class="panel-head">
+        <span class="panel-id">Ferramentas no ar</span>
+        <span class="panel-status"><span class="dot"></span>Operacional</span>
+      </div>
+
+      <div class="state-block">
+        <div class="state-num">5</div>
+        <div class="state-info">
+          <div class="state-name">Ferramentas grátis</div>
+          <div class="state-meta">HTML no navegador<br>Sem login · sem cadastro</div>
+        </div>
+      </div>
+
+      <div class="flow-bars">
+        <div class="flow-bar on"></div>
+        <div class="flow-bar on"></div>
+        <div class="flow-bar on"></div>
+        <div class="flow-bar on"></div>
+      </div>
+
+      <div class="panel-metrics">
+        <div class="pm">
+          <div class="pm-label">GEAR LAB</div>
+          <div class="pm-value">8<span class="u">modelos</span></div>
+          <div class="pm-trend">Tênis catalogados</div>
+        </div>
+        <div class="pm">
+          <div class="pm-label">AERO BIKE</div>
+          <div class="pm-value">CdA<span class="u">v4</span></div>
+          <div class="pm-trend">Bike fit · ROI enxuto</div>
+        </div>
+        <div class="pm">
+          <div class="pm-label">RACE FUELING</div>
+          <div class="pm-value">11<span class="u">seções</span></div>
+          <div class="pm-trend">Jeukendrup + Burke</div>
+        </div>
+        <div class="pm">
+          <div class="pm-label">RACE BRIEFING</div>
+          <div class="pm-value">GPX<span class="u">+meteo</span></div>
+          <div class="pm-trend">Posição estimada · vento</div>
+        </div>
+        <div class="pm">
+          <div class="pm-label">DEBRIEF</div>
+          <div class="pm-value">FIT<span class="u">/GPX</span></div>
+          <div class="pm-trend">Aderência + drift</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ TRUST STRIP ============ -->
+<section class="trust">
+  <div class="container">
+    <div class="trust-inner">
+      <span class="trust-label">Áreas técnicas</span>
+      <div class="trust-logos">
+        <span class="trust-logo">Aerodinâmica</span>
+        <span class="trust-logo">Nutrição esportiva</span>
+        <span class="trust-logo">Biomecânica</span>
+        <span class="trust-logo">Meteorologia aplicada</span>
+        <span class="trust-logo">Análise de treino</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOOLS ============ -->
+<section class="tools-section block" id="tools">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">FERRAMENTAS GRÁTIS</span>
+      <h2>Use agora, <em>grátis.</em></h2>
+      <p>Cinco ferramentas técnicas funcionando hoje no navegador, sem cadastro, sem login. Sem promessa, sem futuro: tá no ar.</p>
+    </div>
+
+    <div class="tools-grid">
+      <a href="/gear-lab.html" class="tool-card reveal d1">
+        <span class="tool-tag">TÊNIS DE CORRIDA</span>
+        <h3 class="tool-name">Gear <em>Lab</em></h3>
+        <p class="tool-desc">Compara 8 modelos do mercado (Vaporfly 3, Adios Pro 3, Metaspeed Sky+, Nimbus 26, Pegasus 41, Ghost 16, Endorphin Speed 4, Wave Rebellion Pro 3). Modo recomendação por perfil ou comparação lado a lado. Specs oficiais + biomecânica aplicada.</p>
+        <span class="tool-cta">
+          Recomendar tênis
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+        </span>
+      </a>
+
+      <a href="/aero-bike-v4.html" class="tool-card reveal d2">
+        <span class="tool-tag">TRIATLO / TT</span>
+        <h3 class="tool-name">Aero <em>Bike</em></h3>
+        <p class="tool-desc">Diagnóstico HUD da setup de prova focado no que realmente move o ponteiro: bike fit, posição, pneu, profundidade de roda e perfil da prova. Cruzamento prova × setup, hierarquia de ROI e watts perdidos por componente. v4 enxuta — sem ruído de catálogo.</p>
+        <span class="tool-cta">
+          Analisar setup
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+        </span>
+      </a>
+
+      <a href="/race-fueling.html" class="tool-card reveal d3">
+        <span class="tool-tag">NUTRIÇÃO DE PROVA</span>
+        <h3 class="tool-name">Race <em>Fueling</em></h3>
+        <p class="tool-desc">Estratégia completa de carbo, sódio e líquido por distância, clima e perfil. Carb load, timeline da prova, tabela de dosagem, comida real, produtos no Brasil com razão Na:CHO. Baseado em Jeukendrup, Burke e casos reais (Ditlev, Blummenfelt, Wurf).</p>
+        <span class="tool-cta">
+          Calcular plano
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+        </span>
+      </a>
+
+      <a href="/race-briefing.html" class="tool-card reveal d4">
+        <span class="tool-tag">PRÉ-PROVA · GPX + METEOROLOGIA</span>
+        <h3 class="tool-name">Race <em>Briefing</em></h3>
+        <p class="tool-desc">Briefing pré-prova completo: cruza o GPX da prova com previsão meteorológica hora a hora. Sumário, vento por trecho, timeline meteorológica, setup da bike (rodas/pneus para o dia), posição estimada na categoria e briefing pronto pra imprimir. Dados Open-Meteo, GPX nunca sai do navegador.</p>
+        <span class="tool-cta">
+          Gerar briefing
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+        </span>
+      </a>
+
+      <a href="/session-debrief.html" class="tool-card reveal d4">
+        <span class="tool-tag">PÓS-TREINO / PÓS-PROVA</span>
+        <h3 class="tool-name">Session <em>Debrief</em></h3>
+        <p class="tool-desc">Suba o GPX ou FIT da sessão. Sistema entrega aderência ao treino proposto, painel HUD, análise de pacing por km, FC com drift cardíaco, distribuição por zona e laudo descritivo no padrão briefing de voo. Arquivo nunca sai do seu navegador.</p>
+        <span class="tool-cta">
+          Analisar sessão
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOOP ============ -->
+<section class="loop-section block" id="loop">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">POR QUÊ</span>
+      <h2>Decisão técnica, <em>não palpite.</em></h2>
+      <p>O LMAeroFit nasceu da prática de um atleta-piloto que aplicou ao endurance o mesmo rigor que usa no cockpit: dados verificáveis, vocabulário técnico, decisão baseada em evidência — não em achismo.</p>
+    </div>
+
+    <div class="loop-grid">
+      <div class="loop-card reveal d1">
+        <div class="loop-num">01 · TÉCNICO</div>
+        <h3>Ciência, <em>não folclore.</em></h3>
+        <p>Cada ferramenta é fundamentada em literatura científica reconhecida — Jeukendrup e Burke para nutrição, Best Bike Split e Birmingham para aerodinâmica e trade-off de potência, Open-Meteo (ECMWF/ICON/ERA5) para meteorologia. Sem fórmulas mágicas, sem promessa de atalho.</p>
+        <div class="loop-pills">
+          <span class="loop-pill live">Literatura aplicada</span>
+          <span class="loop-pill live">Referências citadas</span>
+        </div>
+      </div>
+
+      <div class="loop-card reveal d2">
+        <div class="loop-num">02 · BRASILEIRO</div>
+        <h3>Em português, <em>de verdade.</em></h3>
+        <p>Conteúdo escrito em português brasileiro técnico — não tradução automática de site gringo. Para o atleta que treina aqui, compete aqui, e precisa de ferramenta que entenda a realidade do endurance no Brasil.</p>
+        <div class="loop-pills">
+          <span class="loop-pill live">PT-BR técnico</span>
+          <span class="loop-pill live">Cockpit jargon</span>
+        </div>
+      </div>
+
+      <div class="loop-card reveal d3">
+        <div class="loop-num">03 · PRIVADO</div>
+        <h3>Seus dados <em>no seu navegador.</em></h3>
+        <p>Race Briefing e Session Debrief processam GPX e FIT 100% no seu computador. Nada é enviado para servidor, nada é armazenado, nada vira treinamento de IA. Sem cadastro, sem login, sem cookies de rastreamento.</p>
+        <div class="loop-pills">
+          <span class="loop-pill live">Client-side</span>
+          <span class="loop-pill live">Sem patrocínio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-section block" id="cta">
+  <div class="container">
+    <div class="cta-card reveal">
+      <span class="eyebrow">NEWSLETTER</span>
+      <h2>Receba o que <em>vier primeiro.</em></h2>
+      <p>Use as 5 ferramentas grátis agora. Entre na lista para receber atualizações quando novas ferramentas saírem, análises técnicas semanais e — quando existir — a área de membros com integração completa.</p>
+
+      <form class="email-form" id="email-form-cta" action="https://formspree.io/f/mpqnydll" method="POST">
+          <input type="hidden" name="source" value="cta-final">
+          <input type="hidden" name="_subject" value="Novo lead LMAeroFit (CTA Final)">
+        <input type="email" name="email" placeholder="seu@email.com" required autocomplete="email" />
+        <button type="submit">
+          Entrar na lista
+          <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6.5h7M7 3l3.5 3.5L7 10"/></svg>
+        </button>
+      </form>
+      <div class="email-note"><span class="accent">Sem spam</span> · você decide quando sair</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <img src="./assets/lmaerofit-logo.png" alt="LMAeroFit" />
+        </a>
+        <p>Plataforma técnica brasileira de endurance — construída por atletas, validada em prova, integrada ao que você já usa.</p>
+        <div class="footer-social">
+          <a href="https://instagram.com/lmaerofit" target="_blank" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a href="mailto:contato@lmaerofit.com.br" aria-label="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Ferramentas</h5>
+        <ul>
+          <li><a href="/gear-lab.html">Gear Lab</a></li>
+          <li><a href="/aero-bike-v4.html">Aero Bike</a></li>
+          <li><a href="/race-fueling.html">Race Fueling</a></li>
+          <li><a href="/race-briefing.html">Race Briefing</a></li>
+          <li><a href="/session-debrief.html">Session Debrief</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Conteúdo</h5>
+        <ul>
+          <li><a href="/blog">Blog técnico</a></li>
+          <li><a href="https://instagram.com/lmaerofit">Instagram</a></li>
+          <li><a href="#cta">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Empresa</h5>
+        <ul>
+          <li><a href="/sobre">Sobre</a></li>
+          <li><a href="/contato">Contato</a></li>
+          <li><a href="/privacidade">Privacidade</a></li>
+          <li><a href="/termos">Termos</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 LMAEROFIT · ORIENTAÇÃO EDUCATIVA, NÃO SUBSTITUI NUTRICIONISTA OU MÉDICO</span>
+      <span>SÃO PAULO · BR</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8l3 3 6-6"/></svg>
+  <span>Pronto! Você está na lista.</span>
+</div>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(r => io.observe(r));
+
+  // Email submission (mock — substituir pela chamada real à API/Resend/Beehiiv)
+  </script>
+</body>
+</html>
