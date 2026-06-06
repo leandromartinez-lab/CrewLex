@@ -592,13 +592,21 @@ async function crewlexExtrair(){
   const r=await fetch(CREWLEX_BACKEND+"/api/extrair",{method:"POST",headers:cxHeaders(),
     body:JSON.stringify({imagem_base64:cfFileB64, mime:cfFileMime})});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok){ const e=new Error("HTTP "+r.status); e.status=r.status; e.detalhe=(j&&(j.erro||j.detalhe||j.resposta))||""; e.login=!!(j&&j.erro_login); throw e; }
+  if(!r.ok){ const e=new Error("HTTP "+r.status); e.status=r.status; e.detalhe=(j&&(j.erro||j.detalhe||j.resposta))||""; e.bruto=(j&&j.bruto)||""; e.login=!!(j&&j.erro_login); throw e; }
   return j;
+}
+function tocaMadrugada(apres, corte){
+  if(!validHM(apres)||!validHM(corte)) return "nao";
+  const a=toMin(apres); let c=toMin(corte); if(c<a)c+=1440;
+  for(let t=a;t<=c;t+=30){ const hod=((t%1440)+1440)%1440; if(hod<360) return "sim"; }
+  return "nao";
 }
 function mapJornada(j, res){
   j=j||{};
-  const mad=((j.etapas||[]).some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao";
-  return {apres:j.apresentacao||"", corte:j.corte_motores||j.fim_jornada||"", pousos:j.num_pousos||1,
+  const apres=j.apresentacao||"", corte=j.corte_motores||j.fim_jornada||"";
+  let mad=tocaMadrugada(apres, corte);
+  if(mad==="nao" && j.etapas && j.etapas.length){ mad=(j.etapas.some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao"; }
+  return {apres:apres, corte:corte, pousos:j.num_pousos||1,
     madrugada:mad, trip:j.tipo_tripulacao||"simples", origin:"base", func:(res&&res.funcao)||"piloto", data:j.data||""};
 }
 function jornadaToPre(res){
@@ -830,7 +838,7 @@ function cfPick(tipo){
       .then(j=>{ window.cfRes=j; cfRenderResumo(j, null); })
       .catch(err=>{
         if(err&&err.login){ cxShowLogin(); cxGateShow(); cfRenderResumo(null, {login:true}); return; }
-        cfRenderResumo(null, {status:(err&&err.status)||null, detalhe:(err&&err.detalhe)||""});
+        cfRenderResumo(null, {status:(err&&err.status)||null, detalhe:(err&&err.detalhe)||"", bruto:(err&&err.bruto)||""});
       });
   }else{
     setTimeout(()=>cfRenderConferencia(CEN[tipo], null), 1700);
@@ -906,16 +914,57 @@ function cfPickJornada(i){
   const js=(window.cfRes&&window.cfRes.jornadas)||[];
   if(!js[i])return;
   cfEmpresa=(window.cfRes&&window.cfRes.empresa)||null;
-  cfRenderConferencia(mapJornada(js[i], window.cfRes), null);
+  cfRenderDetalhe(js[i]);
+}
+let cfDet=null;
+function cfOpt(arr, sel){ return arr.map(function(v){return '<option value="'+v+'"'+(v===sel?' selected':'')+'>'+v+'</option>';}).join(''); }
+function cfOptL(pairs, sel){ return pairs.map(function(p){return '<option value="'+p[0]+'"'+(p[0]===sel?' selected':'')+'>'+p[1]+'</option>';}).join(''); }
+function cfRenderDetalhe(j){
+  const m=mapJornada(j, window.cfRes||{});
+  cfDet={func:m.func, trip:m.trip, classe:"1", origin:"base", aclim:"aclimatado", apres:m.apres, corte:m.corte, pousos:m.pousos, madrugada:m.madrugada, data:m.data};
+  const st=document.getElementById("cf-stage"); if(!st)return;
+  const back=(window.cfRes&&((window.cfRes.jornadas||[]).length))
+    ? '<button class="btn ghost" onclick="cfRenderResumo(window.cfRes,null)">‹ Voltar ao resumo</button>'
+    : '<button class="btn ghost" onclick="resetConferir()">Conferir outra</button>';
+  const ss='style="background:transparent;border:1px solid var(--line);color:var(--gold);padding:3px 6px;border-radius:6px;font-size:0.9rem"';
+  st.innerHTML='<div class="panel"><div class="ph">Análise da jornada'+(cfDet.data?(' · '+fmtData(cfDet.data)):'')+'</div>'
+    +'<div class="lt-tabs"><button class="lt active" id="lt-conf" onclick="cfTabPick(\'conf\')">Conformidade</button><button class="lt" id="lt-fad" onclick="cfTabPick(\'fad\')">Fadiga</button></div>'
+    +'<div id="cf-conf"></div><div id="cf-fad" style="display:none"></div>'
+    +'<div class="read-hd" style="margin-top:14px">Ajustes — a IA leu; corrija se precisar</div>'
+    +'<div class="read-card"><span class="rl">Apresentação</span><input id="d_apres" type="time" value="'+(cfDet.apres||'')+'" onchange="cfDetUpd()"></div>'
+    +'<div class="read-card"><span class="rl">Corte dos motores</span><input id="d_corte" type="time" value="'+(cfDet.corte||'')+'" onchange="cfDetUpd()"></div>'
+    +'<div class="read-card"><span class="rl">Pousos / etapas</span><input id="d_pousos" type="number" min="1" max="9" value="'+(cfDet.pousos||1)+'" style="width:64px" onchange="cfDetUpd()"></div>'
+    +'<div class="read-card"><span class="rl">Tripulação</span><select id="d_trip" '+ss+' onchange="cfDetUpd()">'+cfOpt(['simples','composta','revezamento'],cfDet.trip)+'</select></div>'
+    +'<div id="d_classe_wrap" style="display:'+((cfDet.trip==='composta'||cfDet.trip==='revezamento')?'block':'none')+'"><div class="read-card"><span class="rl">Classe de descanso</span><select id="d_classe" '+ss+' onchange="cfDetUpd()">'+cfOpt(['1','2','3'],cfDet.classe)+'</select></div></div>'
+    +'<div class="read-card"><span class="rl">Origem da jornada</span><select id="d_origin" '+ss+' onchange="cfDetUpd()">'+cfOptL([['base','Base'],['fora','Fora da base'],['sobreaviso','Sobreaviso']],cfDet.origin)+'</select></div>'
+    +'<div class="read-card"><span class="rl">Aclimatação</span><select id="d_aclim" '+ss+' onchange="cfDetUpd()">'+cfOptL([['aclimatado','Aclimatado'],['desconhecido','Estado desconhecido']],cfDet.aclim)+'</select></div>'
+    +'<div class="btns" style="margin-top:12px">'+back+'</div></div>';
+  cfDetRender();
+  cfTabPick(cfWantFad?'fad':'conf'); cfWantFad=false;
+}
+function cfDetUpd(){
+  if(!cfDet)return;
+  const g=function(id){return document.getElementById(id);};
+  cfDet.apres=g('d_apres').value; cfDet.corte=g('d_corte').value; cfDet.pousos=parseInt(g('d_pousos').value)||1;
+  cfDet.trip=g('d_trip').value; cfDet.classe=g('d_classe')?g('d_classe').value:'1';
+  cfDet.origin=g('d_origin').value; cfDet.aclim=g('d_aclim').value;
+  g('d_classe_wrap').style.display=(cfDet.trip==='composta'||cfDet.trip==='revezamento')?'block':'none';
+  cfDetRender();
+}
+function cfDetRender(){
+  renderLaudo(cfDet, document.getElementById('cf-conf'));
+  renderFadiga(cfDet, document.getElementById('cf-fad'));
 }
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
   if(err){
     const msg = err.login
       ? "Sua sessão expirou. Faça login e envie a escala de novo."
-      : "A leitura automática falhou"+(err.status?(" (HTTP "+err.status+")"):" (sem resposta do servidor)")+(err.detalhe?(" — "+err.detalhe):"")+". Pode ser que o servidor de leitura (extrair.js) ainda não esteja atualizado na Vercel.";
+      : "A leitura automática falhou"+(err.status?(" (HTTP "+err.status+")"):" (sem resposta do servidor)")+(err.detalhe?(" — "+err.detalhe):"")+".";
+    const brutoBox = (!err.login && err.bruto) ? ('<div style="margin-top:10px;font-size:0.7rem;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-word"><b>A IA respondeu (início):</b>\n'+String(err.bruto).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</div>') : '';
     st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
       +'<div class="confnote" style="border-color:var(--red);color:var(--red)">'+msg+'</div>'
+      +brutoBox
       +'<div class="btns" style="margin-top:12px"><button class="btn" onclick="resetConferir()">Enviar outra</button><button class="btn ghost" onclick="cfManual()">Preencher à mão</button></div></div>';
     return;
   }
@@ -951,7 +1000,7 @@ function cfRenderResumo(res, err){
       rows+='<div class="card" style="cursor:pointer" onclick="cfPickJornada('+i+')">'
         +'<div class="top"><span class="nm">'+dataT+' · voo</span>'+durBadge+'</div>'
         +'<div class="dt">'+horario+(j.num_pousos!=null?(' · '+j.num_pousos+' pouso(s)'):'')+'</div>'
-        +'<div class="fund">'+fadBadge+' <span style="color:var(--dim);font-size:0.7rem">› toque para conferir conformidade</span></div></div>';
+        +'<div class="fund">'+fadBadge+' <span style="color:var(--gold);font-size:0.74rem">→ toque para ver conformidade e fadiga</span></div></div>';
     } else {
       const rotulo = ativ ? ativ : "atividade";
       rows+='<div class="card" style="opacity:.7"><div class="top"><span class="nm">'+dataT+' · '+rotulo+'</span></div></div>';
