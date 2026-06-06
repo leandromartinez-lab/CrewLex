@@ -595,14 +595,18 @@ async function crewlexExtrair(){
   if(!r.ok){ const e=new Error("HTTP "+r.status); e.status=r.status; e.detalhe=(j&&(j.erro||j.detalhe||j.resposta))||""; e.login=!!(j&&j.erro_login); throw e; }
   return j;
 }
+function mapJornada(j, res){
+  j=j||{};
+  const mad=((j.etapas||[]).some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao";
+  return {apres:j.apresentacao||"", corte:j.corte_motores||j.fim_jornada||"", pousos:j.num_pousos||1,
+    madrugada:mad, trip:j.tipo_tripulacao||"simples", origin:"base", func:(res&&res.funcao)||"piloto", data:j.data||""};
+}
 function jornadaToPre(res){
   const js=(res&&res.jornadas)||[];
   const j=js.find(x=>x.atividade==="voo")||js[0]||{};
-  const mad=((j.etapas||[]).some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao";
   cfEmpresa=(res&&res.empresa)||null;
   cfPernoiteCidade=(j.pernoite&&j.pernoite.cidade)||null;
-  return {apres:j.apresentacao||"", corte:j.corte_motores||j.fim_jornada||"", pousos:j.num_pousos||1,
-    madrugada:mad, trip:j.tipo_tripulacao||"simples", origin:"base", func:(res&&res.funcao)||"piloto", data:j.data||""};
+  return mapJornada(j, res);
 }
 // envia SÓ dados anônimos (sem nome, matrícula, voo ou data exata) e SÓ com opt-in
 function crewlexContribuir(d, anoMesRaw){
@@ -823,18 +827,10 @@ function cfPick(tipo){
       <div class="ln">› preparando para sua conferência…</div></div></div>`;
   if(CF_REAL && cfFileB64){
     crewlexExtrair()
-      .then(j=>{
-        const pre=jornadaToPre(j);
-        const n=((j&&j.jornadas)||[]).length;
-        let aviso=null;
-        if(j&&j.eh_escala===false){ aviso="O arquivo não parece uma escala — confira/preencha manualmente."; }
-        else if(!pre.apres && !pre.corte){ aviso="A IA leu o documento"+(n?(" e encontrou "+n+" atividade(s)"):"")+", mas não identificou apresentação e corte para preencher (costuma acontecer com a grade do mês inteiro). Preencha a jornada que você quer conferir."; }
-        cfRenderConferencia(pre, aviso);
-      })
+      .then(j=>{ window.cfRes=j; cfRenderResumo(j, null); })
       .catch(err=>{
-        if(err&&err.login){ cfRenderConferencia({}, "Sua sessão expirou — faça login e tente de novo."); cxShowLogin(); cxGateShow(); return; }
-        const det=(err&&err.detalhe)?(" — "+err.detalhe):"";
-        cfRenderConferencia({}, "A leitura automática falhou ("+((err&&err.status)||"sem resposta do servidor")+")"+det+". Confira/preencha manualmente abaixo.");
+        if(err&&err.login){ cxShowLogin(); cxGateShow(); cfRenderResumo(null, {login:true}); return; }
+        cfRenderResumo(null, {status:(err&&err.status)||null, detalhe:(err&&err.detalhe)||""});
       });
   }else{
     setTimeout(()=>cfRenderConferencia(CEN[tipo], null), 1700);
@@ -865,7 +861,7 @@ function cfRenderConferencia(c, aviso){
       <div class="read-card"><span class="rl">Madrugada (00–06h)</span><select id="c_madrugada" style="width:auto;background:transparent;border:none;color:var(--gold);font-size:0.95rem"><option value="nao">Não</option><option value="sim">Sim</option></select></div>
       <div class="read-card"><span class="rl">Data da jornada</span><input id="c_data" type="date" style="width:150px;color:var(--gold)"></div>
 
-      <div class="btns" style="margin-top:14px"><button class="btn" onclick="cfLaudo()">Conferir agora</button><button class="btn ghost" onclick="resetConferir()">Recomeçar</button></div></div>`;
+      <div class="btns" style="margin-top:14px"><button class="btn" onclick="cfLaudo()">Conferir agora</button><button class="btn ghost" onclick="resetConferir()">Recomeçar</button>${(window.cfRes&&((window.cfRes.jornadas||[]).length))?`<button class="btn ghost" onclick="cfRenderResumo(window.cfRes,null)">‹ Resumo</button>`:``}</div></div>`;
   c_apres.value=c.apres||"";c_corte.value=c.corte||"";c_pousos.value=c.pousos||1;c_madrugada.value=c.madrugada||"nao";
   if(c.data) c_data.value=c.data;
   const trip=c.trip||"simples", origin=c.origin||"base", func=c.func||"piloto";
@@ -892,6 +888,79 @@ function cfTabPick(t){
   document.getElementById("cf-fad").style.display  = t==='fad'?'block':'none';
   document.getElementById("lt-conf").classList.toggle('active',t==='conf');
   document.getElementById("lt-fad").classList.toggle('active',t==='fad');
+}
+
+/* ===== RESUMO DA ESCALA (várias jornadas) ===== */
+function jornadaFadPreview(j){
+  const m=mapJornada(j, window.cfRes||{});
+  if(!(validHM(m.apres)&&validHM(m.corte))) return null;
+  const r=fadAssess({apres:m.apres,corte:m.corte});
+  if(!r) return null;
+  return {minA:r.minA, lvl:r.lvl, dur:fmtH(calc(m.apres,m.corte).durH)};
+}
+function badgeFg(c){return c==='ok'?'var(--green)':c==='warn'?'var(--yellow)':c==='bad'?'var(--red)':'var(--dim)';}
+function badgeBg(c){return c==='ok'?'rgba(109,181,138,.13)':c==='warn'?'rgba(232,184,74,.13)':c==='bad'?'rgba(224,104,95,.13)':'rgba(155,176,196,.10)';}
+function badgeStyle(c){return "background:"+badgeBg(c)+";color:"+badgeFg(c)+";border:1px solid "+badgeFg(c)+";border-radius:6px;padding:2px 7px;font-size:0.66rem;display:inline-block";}
+function cfManual(){ cfRenderConferencia({}, null); }
+function cfPickJornada(i){
+  const js=(window.cfRes&&window.cfRes.jornadas)||[];
+  if(!js[i])return;
+  cfEmpresa=(window.cfRes&&window.cfRes.empresa)||null;
+  cfRenderConferencia(mapJornada(js[i], window.cfRes), null);
+}
+function cfRenderResumo(res, err){
+  const st=document.getElementById("cf-stage"); if(!st)return;
+  if(err){
+    const msg = err.login
+      ? "Sua sessão expirou. Faça login e envie a escala de novo."
+      : "A leitura automática falhou"+(err.status?(" (HTTP "+err.status+")"):" (sem resposta do servidor)")+(err.detalhe?(" — "+err.detalhe):"")+". Pode ser que o servidor de leitura (extrair.js) ainda não esteja atualizado na Vercel.";
+    st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
+      +'<div class="confnote" style="border-color:var(--red);color:var(--red)">'+msg+'</div>'
+      +'<div class="btns" style="margin-top:12px"><button class="btn" onclick="resetConferir()">Enviar outra</button><button class="btn ghost" onclick="cfManual()">Preencher à mão</button></div></div>';
+    return;
+  }
+  res=res||{};
+  if(res.eh_escala===false){
+    st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
+      +'<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Isto não parece uma escala de aeronauta. Envie a escala (PDF do mês) ou um print de alteração.</div>'
+      +'<div class="btns" style="margin-top:12px"><button class="btn" onclick="resetConferir()">Enviar outra</button><button class="btn ghost" onclick="cfManual()">Preencher à mão</button></div></div>';
+    return;
+  }
+  const js=(res.jornadas||[]);
+  if(js.length===0){
+    st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
+      +'<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">A IA leu o documento, mas não identificou nenhuma jornada. Se for a grade do mês inteiro, tente um print mais nítido (ou de uma semana por vez).</div>'
+      +'<div class="btns" style="margin-top:12px"><button class="btn" onclick="resetConferir()">Enviar outra</button><button class="btn ghost" onclick="cfManual()">Preencher à mão</button></div></div>';
+    return;
+  }
+  const emp=res.empresa?(" · "+res.empresa):""; const fun=res.funcao?(" · "+(res.funcao==='comissario'?'Comissário':'Piloto')):"";
+  const FADTXT={g:"baixa",y:"moderada",r:"alta"};
+  let rows="";
+  js.forEach(function(j,i){
+    const ativ=(j.atividade||null);
+    const isVoo = ativ==="voo" || (Array.isArray(j.etapas)&&j.etapas.length>0) || !!j.apresentacao || !!j.corte_motores;
+    const dataT = j.data?fmtData(j.data):"data?";
+    if(isVoo){
+      const apT=j.apresentacao||null, coT=j.corte_motores||null;
+      const fp=jornadaFadPreview(j);
+      const horario = (apT&&coT) ? (apT+" → "+coT) : '<span style="color:var(--yellow)">horário não lido na escala</span>';
+      const durBadge = fp ? '<span style="color:var(--gold);font-size:0.82rem">'+fp.dur+'</span>' : '';
+      const cls = fp ? (fp.lvl==='g'?'ok':fp.lvl==='y'?'warn':'bad') : 'dim';
+      const fadBadge = fp ? ('<span style="'+badgeStyle(cls)+'">fadiga '+FADTXT[fp.lvl]+' ('+fp.minA+')</span>')
+                          : ('<span style="'+badgeStyle('dim')+'">fadiga: sem horário lido</span>');
+      rows+='<div class="card" style="cursor:pointer" onclick="cfPickJornada('+i+')">'
+        +'<div class="top"><span class="nm">'+dataT+' · voo</span>'+durBadge+'</div>'
+        +'<div class="dt">'+horario+(j.num_pousos!=null?(' · '+j.num_pousos+' pouso(s)'):'')+'</div>'
+        +'<div class="fund">'+fadBadge+' <span style="color:var(--dim);font-size:0.7rem">› toque para conferir conformidade</span></div></div>';
+    } else {
+      const rotulo = ativ ? ativ : "atividade";
+      rows+='<div class="card" style="opacity:.7"><div class="top"><span class="nm">'+dataT+' · '+rotulo+'</span></div></div>';
+    }
+  });
+  st.innerHTML='<div class="panel"><div class="ph">Resumo da escala'+emp+fun+'</div>'
+    +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
+    +rows
+    +'<div class="btns" style="margin-top:12px"><button class="btn ghost" onclick="resetConferir()">Enviar outra escala</button></div></div>';
 }
 
 /* ===== FADIGA (modelo de três processos — estimativa de uma jornada) ===== */
