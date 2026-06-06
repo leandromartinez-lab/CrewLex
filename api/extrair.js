@@ -76,7 +76,7 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         model: VISION_MODEL,
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: getPrompt(),
         messages: [{
           role: 'user',
@@ -98,9 +98,12 @@ module.exports = async (req, res) => {
 
     let json;
     try {
-      json = JSON.parse(texto.replace(/```json/g, '').replace(/```/g, '').trim());
+      let limpo = texto.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const ini = limpo.indexOf('{'), fim = limpo.lastIndexOf('}');
+      if (ini !== -1 && fim !== -1 && fim > ini) limpo = limpo.slice(ini, fim + 1);
+      json = JSON.parse(limpo);
     } catch (e) {
-      return res.status(422).json({ erro: 'a IA não devolveu JSON válido', eh_escala: false, bruto: texto.slice(0, 500) });
+      return res.status(422).json({ erro: 'a IA não devolveu JSON válido', eh_escala: false, bruto: texto.slice(0, 600) });
     }
 
     // privacidade: nada é persistido aqui.
