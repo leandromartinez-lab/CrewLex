@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
           role: 'user',
           content: [
             bloco,
-            { type: 'text', text: 'Extraia os dados desta escala conforme as regras. Responda APENAS com o JSON, sem texto antes ou depois.' }
+            { type: 'text', text: 'Extraia os dados desta escala conforme as regras. IMPORTANTE para ser rápido: NÃO inclua o campo "etapas" — em cada jornada devolva apenas data, apresentacao, corte_motores, num_pousos, atividade, tipo_tripulacao e pernoite. Responda APENAS com o JSON, compacto, sem texto antes ou depois.' }
           ]
         }]
       })
