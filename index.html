@@ -69,10 +69,13 @@
   .sqb.rdy .sbar{filter:drop-shadow(0 0 3px rgba(109,181,138,.8))}
   .sqb.soon .sbar{opacity:.9}
   /* ===== conversor ===== */
-  .cv-tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
-  .cv-tabs::-webkit-scrollbar{height:0}
-  .cv-tab{flex:0 0 auto;background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.72rem;letter-spacing:.5px;text-transform:uppercase;padding:8px 12px;border-radius:9px;cursor:pointer}
-  .cv-tab.on{background:linear-gradient(180deg,#1b2f48,#0d1d31);border-color:var(--gold);color:var(--gold)}
+  .cv-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+  .cv-cat{position:relative;aspect-ratio:1/1;background:linear-gradient(180deg,#1b2f48,#0d1d31);border:1.5px solid #2c4a6e;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-family:inherit;padding:6px 3px}
+  .cv-cat svg{width:24px;height:24px;stroke:var(--dim);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .cv-cat .cl{font-size:0.52rem;letter-spacing:.3px;color:var(--dim);text-transform:uppercase;text-align:center;line-height:1.05}
+  .cv-cat.on{border-color:var(--gold);background:linear-gradient(180deg,#243a56,#15293f);box-shadow:0 0 12px rgba(212,164,55,.18)}
+  .cv-cat.on svg{stroke:var(--gold)}
+  .cv-cat.on .cl{color:var(--gold)}
   .cv-inrow{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}
   .cv-val{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:14px;font-size:1.5rem;font-family:inherit;font-weight:700;width:100%}
   .cv-sel{background:var(--navy);border:1px solid var(--line);color:var(--gold);border-radius:10px;padding:0 12px;font-size:1rem;font-family:inherit;cursor:pointer}
@@ -486,7 +489,7 @@
 
       <!-- CONVERSÃO -->
       <div class="view" id="v-conversao">
-        <div class="cv-tabs" id="cv-tabs"></div>
+        <div class="cv-cats" id="cv-cats"></div>
         <div class="panel">
           <div class="cv-inrow">
             <input id="cv-val" class="cv-val" inputmode="decimal" oninput="cvCalc()" placeholder="0">
@@ -702,25 +705,35 @@ function emBreve(nome,desc){ var b=document.getElementById('eb-body'); if(b) b.i
 
 /* ===== CONVERSOR ===== */
 var CONV={
-  dist:{us:{m:1,km:1000,NM:1852,mi:1609.344,ft:0.3048}},
+  dist:{us:{cm:0.01,m:1,km:1000,NM:1852,mi:1609.344,ft:0.3048,in:0.0254}},
   vel:{us:{kt:0.514444,'km/h':0.277778,mph:0.44704,'m/s':1}},
-  peso:{us:{kg:1,lb:0.453592,g:0.001,t:1000}},
-  vol:{us:{L:1,'gal US':3.785411784,'gal Imp':4.54609}},
-  press:{us:{hPa:1,inHg:33.8639,mmHg:1.333224,psi:68.9476}}
+  peso:{us:{g:0.001,kg:1,t:1000,lb:0.453592,oz:0.0283495}},
+  vol:{us:{mL:0.001,L:1,'gal US':3.785411784,'gal Imp':4.54609}},
+  press:{us:{hPa:1,inHg:33.8639,mmHg:1.333224,psi:68.9476,atm:1013.25}},
+  tempo:{us:{s:1,min:60,h:3600,dia:86400}}
 };
 var CV_TEMP=['°C','°F','K'];
 var CV_CUR=['BRL','USD','EUR','GBP','ARS','CLP','CHF','JPY'];
 var cvCat='dist', cvRates=null, cvRatesFrom=null;
 function cvInit(){
-  var cats=[['dist','Distância'],['vel','Velocidade'],['temp','Temperatura'],['peso','Peso'],['vol','Volume'],['press','Pressão'],['cur','Moeda']];
-  document.getElementById('cv-tabs').innerHTML=cats.map(function(c){return '<button class="cv-tab" id="cvtab-'+c[0]+'" onclick="cvSetCat(\''+c[0]+'\')">'+c[1]+'</button>';}).join('');
+  var cats=[
+   ['dist','Distância','<svg viewBox="0 0 24 24"><rect x="3" y="8.5" width="18" height="7" rx="1"/><path d="M7 8.5v3M11 8.5v4M15 8.5v3M19 8.5v4"/></svg>'],
+   ['vel','Velocidade','<svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 0116 0"/><path d="M12 16l5-4"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>'],
+   ['temp','Temperatura','<svg viewBox="0 0 24 24"><path d="M14 14.5V6a2 2 0 10-4 0v8.5a3.5 3.5 0 104 0z"/></svg>'],
+   ['peso','Peso','<svg viewBox="0 0 24 24"><path d="M9 7.5a3 3 0 016 0"/><path d="M7.5 8.5h9l1.8 11H5.7z"/></svg>'],
+   ['vol','Volume','<svg viewBox="0 0 24 24"><path d="M6.5 5h11l-1.4 14H7.9z"/><line x1="8.6" y1="11" x2="13.5" y2="11"/><line x1="9" y1="15" x2="12.6" y2="15"/></svg>'],
+   ['press','Pressão','<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><path d="M12 4.5v1.6M19.5 12h-1.6M12 19.5v-1.6M4.5 12h1.6"/></svg>'],
+   ['tempo','Tempo','<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3.5 2"/></svg>'],
+   ['cur','Moeda','<svg viewBox="0 0 24 24"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.8h.02M18 14.2h.02"/></svg>']
+  ];
+  document.getElementById('cv-cats').innerHTML=cats.map(function(c){return '<button class="cv-cat" id="cvcat-'+c[0]+'" onclick="cvSetCat(\''+c[0]+'\')">'+c[2]+'<span class="cl">'+c[1]+'</span></button>';}).join('');
   cvSetCat(cvCat);
 }
 function cvUnitsFor(cat){ if(cat==='temp')return CV_TEMP; if(cat==='cur')return CV_CUR; return Object.keys(CONV[cat].us); }
 function cvSetCat(cat){
   cvCat=cat;
-  document.querySelectorAll('.cv-tab').forEach(function(b){b.classList.remove('on');});
-  var t=document.getElementById('cvtab-'+cat); if(t)t.classList.add('on');
+  document.querySelectorAll('.cv-cat').forEach(function(b){b.classList.remove('on');});
+  var t=document.getElementById('cvcat-'+cat); if(t)t.classList.add('on');
   var units=cvUnitsFor(cat), sel=document.getElementById('cv-from');
   sel.innerHTML=units.map(function(u){return '<option>'+u+'</option>';}).join('');
   sel.value = cat==='cur'?'BRL':units[0];
