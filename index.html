@@ -48,6 +48,11 @@
   .hu-red .hu-flap{color:var(--red);border-color:#4a1e1e;background:#160a0a}
   .hu-red .hu-sub{color:var(--red)}
   @keyframes huflip{0%{transform:rotateX(90deg);opacity:.2}100%{transform:rotateX(0);opacity:1}}
+  .termsbox{max-height:150px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:0.66rem;line-height:1.55;color:var(--dim);background:rgba(0,0,0,.15)}
+  .termsbox h4{color:var(--ink);font-size:0.72rem;margin:9px 0 3px}
+  .termsbox b{color:var(--ink)}
+  .termschk{display:flex;gap:9px;align-items:flex-start;margin-top:11px;font-size:0.72rem;text-transform:none;letter-spacing:0;color:var(--ink);cursor:pointer}
+  .termschk input{margin-top:2px;width:18px;height:18px;flex-shrink:0}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .tile{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:18px 16px;cursor:pointer;transition:.15s;text-align:left;min-height:138px;display:flex;flex-direction:column;justify-content:space-between}
   .tile:active{transform:scale(.97);border-color:var(--gold)}
@@ -104,7 +109,8 @@
   .mt-item{background:var(--navy2);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
   .mt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer}
   .mt-ic{font-weight:700;font-size:1.15rem;letter-spacing:1px;color:var(--ink);flex-shrink:0}
-  .mt-sum{font-size:0.82rem;color:var(--dim);text-align:right;line-height:1.35}
+  .mt-sum{font-size:0.96rem;color:var(--ink);font-weight:600;text-align:right;line-height:1.3}
+  .mt-wx{font-size:1.08rem;margin-right:3px}
   .mt-body{display:none;padding:0 14px 14px}
   .mt-item.open .mt-body{display:block}
   .mt-rep{margin-bottom:14px}
@@ -320,6 +326,29 @@
             <option value="comissario">Comissário</option>
           </select></div>
       </div>
+      <label style="margin-top:4px">Você é sindicalizado?</label>
+      <select id="su-sind">
+        <option value="">Prefiro não informar</option>
+        <option value="sim">Sim</option>
+        <option value="nao">Não</option>
+      </select>
+      <div class="termsbox" id="su-terms">
+        <h4>Termos de Uso e Privacidade — CrewLex</h4>
+        <b>O que é.</b> O CrewLex é uma ferramenta de <b>apoio</b> ao tripulante: organiza informações de jornada, fadiga e regras, sempre citando a fonte. <b>Não é aconselhamento jurídico nem documento oficial</b> — a conferência e as decisões finais são suas. Em caso de dúvida, confirme na fonte (Lei, RBAC, CCT, ACT) e com seu sindicato.
+        <h4>Dados que tratamos</h4>
+        Para você usar o app, guardamos <b>e-mail e senha</b> (login) e, se você informar, <b>nome, empresa, função e se é sindicalizado</b>. Registramos também <b>quantas consultas você faz por mês</b> (para o limite do plano).
+        <h4>Sua escala</h4>
+        Quando você envia uma escala (PDF ou imagem), ela é <b>lida e descartada em seguida</b>. O CrewLex <b>não guarda</b> o arquivo, nem o seu CPF, código ANAC ou senhas de empresa.
+        <h4>Estatísticas</h4>
+        Podemos gerar <b>estatísticas agregadas e anônimas</b> (ex.: total de consultas, por empresa, por função, sindicalizados × não) para entender o uso e melhorar o app. Essas estatísticas <b>nunca identificam você individualmente</b>.
+        <h4>Uso dos dados</h4>
+        Usamos seus dados apenas para <b>operar e melhorar o CrewLex</b>. <b>Não vendemos</b> seus dados e <b>não exibimos anúncios</b> baseados neles.
+        <h4>Seus direitos (LGPD)</h4>
+        Você pode <b>acessar, corrigir ou excluir</b> seus dados a qualquer momento pelo canal de contato do CrewLex. Excluir a conta remove seus dados de login e de perfil.
+        <h4>Contribuição opcional</h4>
+        Se você marcar a opção no envio da escala, pode contribuir <b>anonimamente</b> para o estudo de fadiga das tripulações — apenas dados sem identificação.
+      </div>
+      <label class="termschk"><input type="checkbox" id="su-consent"> Li e concordo com os Termos de Uso e a Política de Privacidade acima.</label>
       <button class="authbtn" id="su-btn" onclick="cxSignup()">Criar conta e entrar</button>
       <div class="autherr" id="su-err"></div>
       <div class="authswitch">Já tem conta? <a onclick="cxShowLogin()">Entrar</a></div>
@@ -357,7 +386,7 @@
           <button class="sqb rdy" onclick="go('soma')"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="6.5"/><path d="M11 10.3V13l1.9 1.3"/><path d="M17 5v4M15 7h4"/></svg><span class="sl">Soma</span><span class="ss">de horas</span><span class="sbar"></span></button>
           <button class="sqb rdy" onclick="go('passe')"><svg viewBox="0 0 24 24"><path d="M4 9a1 1 0 011-1h14a1 1 0 011 1v1.5a1.5 1.5 0 000 3V15a1 1 0 01-1 1H5a1 1 0 01-1-1v-1.5a1.5 1.5 0 000-3z"/><line x1="13" y1="8.5" x2="13" y2="15.5" stroke-dasharray="1.6 1.6"/></svg><span class="sl">Passe livre</span><span class="ss">viagem</span><span class="sbar"></span></button>
           <button class="sqb rdy" onclick="go('docs')"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="11" r="2"/><line x1="13" y1="10" x2="17" y2="10"/><line x1="13" y1="13.5" x2="17" y2="13.5"/><path d="M6.4 15.4c.6-1.3 4.1-1.3 4.7 0"/></svg><span class="sl">Documentos</span><span class="ss">anac · sna</span><span class="sbar"></span></button>
-          <button class="sqb rdy" onclick="go('meteo')"><svg viewBox="0 0 24 24"><path d="M7 18h9a3.5 3.5 0 00.6-7 5 5 0 00-9.7 1.4A3.2 3.2 0 007 18z"/></svg><span class="sl">Meteo</span><span class="ss">metar · taf</span><span class="sbar"></span></button>
+          <button class="sqb rdy" onclick="go('meteo')"><svg viewBox="0 0 24 24"><path d="M7 18h9a3.5 3.5 0 00.6-7 5 5 0 00-9.7 1.4A3.2 3.2 0 007 18z"/></svg><span class="sl">Weather</span><span class="ss">metar · taf</span><span class="sbar"></span></button>
           <button class="sqb rdy" onclick="go('conversao')"><svg viewBox="0 0 24 24"><path d="M6 9h12l-3-3M18 15H6l3 3"/></svg><span class="sl">Conversão</span><span class="ss">unidades</span><span class="sbar"></span></button>
         </div>
         <div class="sectitle">Sobre</div>
@@ -636,15 +665,19 @@ async function cxSignup(){
   const pass=document.getElementById('su-pass').value||'';
   const empresa=document.getElementById('su-empresa').value||'GOL';
   const funcao=document.getElementById('su-funcao').value||'piloto';
+  const sind=(document.getElementById('su-sind')||{}).value||'';
+  const consent=document.getElementById('su-consent');
   if(!email||!pass){ err.textContent='Informe e-mail e senha.'; return; }
   if(pass.length<6){ err.textContent='A senha precisa ter ao menos 6 caracteres.'; return; }
+  if(!consent||!consent.checked){ err.textContent='Para criar a conta, leia e marque que você concorda com os Termos e a Política de Privacidade.'; return; }
   if(!cxSB){ err.textContent='Configuração ausente (config.js).'; return; }
   const btn=document.getElementById('su-btn'); btn.disabled=true; btn.textContent='Criando…';
   try{
     const {data,error}=await cxSB.auth.signUp({email,password:pass});
     if(error){ err.textContent=cxMsg(error); btn.disabled=false; btn.textContent='Criar conta e entrar'; return; }
     const uid=data.user&&data.user.id;
-    if(uid){ try{ await cxSB.from('profiles').insert({id:uid,nome:nome||null,email:email,empresa:empresa,funcao:funcao}); }catch(e){} }
+    if(uid){ try{ await cxSB.from('profiles').insert({id:uid,nome:nome||null,email:email,empresa:empresa,funcao:funcao}); }catch(e){}
+      try{ await cxSB.from('profiles').update({sindicalizado:(sind||null),consent_versao:'v1-2026-06',consent_em:new Date().toISOString()}).eq('id',uid); }catch(e){} }
     if(data.session){ await cxOnLogged(data.session); }
     else { const {data:d2,error:e2}=await cxSB.auth.signInWithPassword({email,password:pass}); if(e2){ err.textContent='Conta criada. Faça login para entrar.'; cxShowLogin(); } else { await cxOnLogged(d2.session); } }
   }catch(e){ err.textContent='Falha ao criar conta. Tente de novo.'; }
@@ -825,7 +858,7 @@ function mtFetch(ic){
   fetch(CREWLEX_BACKEND+'/api/metar?icao='+ic).then(function(r){return r.json();}).then(function(j){
     mtStore[ic]=j||{};
     var p=mtParse((j&&j.metar)||''); var ss=document.getElementById('mts-'+ic);
-    if(ss) ss.innerHTML = p ? (p.wind+' · '+p.temp+' · '+p.qnh) : 'ver METAR / TAF';
+    if(ss) ss.innerHTML = p ? ((p.icon?'<span class="mt-wx">'+p.icon+'</span> ':'')+p.wind+' · '+p.temp+' · '+p.qnh) : 'ver METAR / TAF';
     var it=document.getElementById('mti-'+ic);
     if(it && it.classList.contains('open')) mtFillBody(ic);
   }).catch(function(){ var ss=document.getElementById('mts-'+ic); if(ss)ss.textContent='erro ao buscar'; });
@@ -847,6 +880,21 @@ function mtAdd(){
   mtSaveFavs(favs); i.value=''; mtRenderList();
 }
 function mtRemove(ic){ mtSaveFavs(mtFavs().filter(function(x){return x!==ic;})); mtRenderList(); }
+function mtWxIcon(m){
+  if(!m) return '';
+  var up=m.toUpperCase().replace(/=+$/,'');
+  var toks=up.replace(/^(METAR|SPECI)\s+/,'').split(/\s+/);
+  var body=' '+toks.slice(1).join(' ')+' ';      // sem o indicativo OACI (evita BR/GR do código)
+  if(/TS/.test(body)) return '⛈️';                // trovoada (TS, VCTS, TSRA…)
+  if(/(RA|DZ|SH|GR|GS|PL)/.test(body)) return '🌧️'; // chuva / garoa / pancada / granizo
+  if(/(SN|SG)/.test(body)) return '🌨️';           // neve
+  if(/FG/.test(body)) return '🌫️';                // nevoeiro
+  if(/(BR|HZ|FU)/.test(body)) return '🌫️';        // névoa úmida / seca / fumaça
+  if(/(CAVOK|SKC|CLR|NSC|NCD)/.test(body)) return '☀️'; // céu limpo
+  if(/(OVC|BKN)\d{3}/.test(body)) return '☁️';     // encoberto / nublado
+  if(/(FEW|SCT)\d{3}/.test(body)) return '⛅';      // poucas nuvens
+  return '🌤️';
+}
 function mtParse(m){
   if(!m) return null;
   var w=m.match(/\b(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?KT\b/);
@@ -855,7 +903,7 @@ function mtParse(m){
   var wind = w ? ((w[1]==='VRB'?'VRB':w[1]+'°')+' '+(+w[2])+'kt'+(w[3]?'G'+(+w[3]):'')) : '—';
   var temp = t ? (t[1].replace('M','-'))+'°C' : '—';
   var qnh = q ? (q[1]+' hPa') : (a ? (a[1].slice(0,2)+'.'+a[1].slice(2)+' inHg') : '—');
-  return {wind:wind, temp:temp, qnh:qnh};
+  return {wind:wind, temp:temp, qnh:qnh, icon:mtWxIcon(m)};
 }
 
 /* ===== PERNOITE (utilidade de layover) ===== */
