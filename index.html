@@ -603,7 +603,9 @@ function tocaMadrugada(apres, corte){
 }
 function mapJornada(j, res){
   j=j||{};
-  const apres=j.apresentacao||"", corte=j.corte_motores||j.fim_jornada||"";
+  let apres=j.apresentacao||"", corte=j.corte_motores||j.fim_jornada||"";
+  if(!validHM(apres)) apres="";
+  if(!validHM(corte)) corte="";
   let mad=tocaMadrugada(apres, corte);
   if(mad==="nao" && j.etapas && j.etapas.length){ mad=(j.etapas.some(e=>{const t=(e.partida||e.chegada||"");const h=parseInt(t.split(":")[0],10);return h>=0&&h<6;}))?"sim":"nao"; }
   return {apres:apres, corte:corte, pousos:j.num_pousos||1,
@@ -955,6 +957,27 @@ function cfDetRender(){
   renderLaudo(cfDet, document.getElementById('cf-conf'));
   renderFadiga(cfDet, document.getElementById('cf-fad'));
 }
+function fadBarChart(bars){
+  const W=320,H=120,padL=8,padR=8,padT=10,padB=14;
+  const n=bars.length, innerW=W-padL-padR, innerH=H-padT-padB;
+  const Y=function(a){return padT+(1-(Math.max(0,Math.min(100,a))/100))*innerH;};
+  const y0=Y(0), y65=Y(65), y775=Y(77.5), y100=Y(100);
+  const gap=n>20?1:2, bw=Math.max(3,(innerW-(n-1)*gap)/n);
+  let rects="";
+  bars.forEach(function(b,k){
+    const x=padL+k*(bw+gap);
+    const c=b.fp.lvl==='g'?'ok':b.fp.lvl==='y'?'warn':'bad';
+    const yTop=Y(b.fp.minA);
+    rects+='<rect x="'+x.toFixed(1)+'" y="'+yTop.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(y0-yTop).toFixed(1)+'" rx="1" fill="'+badgeFg(c)+'" opacity="0.9" style="cursor:pointer" onclick="cfPickJornada('+b.i+')"><title>'+(b.data?fmtData(b.data):'jornada')+' · alerta '+b.fp.minA+'</title></rect>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;margin:4px 0" role="img" aria-label="fadiga por jornada no mes">'
+    +'<rect x="'+padL+'" y="'+y100.toFixed(1)+'" width="'+innerW+'" height="'+(y775-y100).toFixed(1)+'" fill="var(--green)" opacity="0.07"/>'
+    +'<rect x="'+padL+'" y="'+y775.toFixed(1)+'" width="'+innerW+'" height="'+(y65-y775).toFixed(1)+'" fill="var(--yellow)" opacity="0.07"/>'
+    +'<rect x="'+padL+'" y="'+y65.toFixed(1)+'" width="'+innerW+'" height="'+(y0-y65).toFixed(1)+'" fill="var(--red)" opacity="0.07"/>'
+    +'<line x1="'+padL+'" y1="'+y775.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y775.toFixed(1)+'" stroke="var(--green)" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>'
+    +'<line x1="'+padL+'" y1="'+y65.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y65.toFixed(1)+'" stroke="var(--red)" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.5"/>'
+    +rects+'</svg>';
+}
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
   if(err){
@@ -1006,8 +1029,11 @@ function cfRenderResumo(res, err){
       rows+='<div class="card" style="opacity:.7"><div class="top"><span class="nm">'+dataT+' · '+rotulo+'</span></div></div>';
     }
   });
+  const bars=js.map(function(j,i){return {i:i, data:j.data, fp:jornadaFadPreview(j)};}).filter(function(b){return b.fp;});
+  const chartBlock = bars.length>=2 ? ('<div style="font-size:0.62rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas/vermelhas = jornadas mais cansativas (toque numa barra)</div>'+fadBarChart(bars)) : '';
   st.innerHTML='<div class="panel"><div class="ph">Resumo da escala'+emp+fun+'</div>'
     +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
+    +chartBlock
     +rows
     +'<div class="btns" style="margin-top:12px"><button class="btn ghost" onclick="resetConferir()">Enviar outra escala</button></div></div>';
 }
@@ -1023,7 +1049,7 @@ function fadClock(t){const x=((t%24)+24)%24;const H=Math.floor(x),M=Math.round((
 function fadLevel(a){return a>=77.5?'g':(a>=65?'y':'r');}
 function fadAssess(d){
   let apres=fadHM(d.apres),corte=fadHM(d.corte);
-  if(apres==null||corte==null)return null;
+  if(apres==null||corte==null||!isFinite(apres)||!isFinite(corte))return null;
   if(corte<apres)corte+=24;                 // jornada vira meia-noite
   const wake=Math.min(7.5,apres-1.0);        // sono noturno 23:30–07:30; acorda 1h antes se cedo
   const sleep=Math.max(0,Math.min(8,wake-(-0.5)));
