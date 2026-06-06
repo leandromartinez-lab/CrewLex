@@ -110,3 +110,4 @@ module.exports = async (req, res) => {
     return res.status(500).json({ erro: 'erro interno', detalhe: String((e && e.message) || e).slice(0, 200) });
   }
 };
+  
