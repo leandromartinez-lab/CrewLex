@@ -37,6 +37,17 @@
   .hero .greet{font-size:0.84rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
   .hero .head{font-size:1.5rem;margin-top:8px;line-height:1.35}
   .hero .head b{color:var(--gold)}
+  #home-usage{margin:14px 0 2px;text-align:center}
+  .hu-lbl{font-size:0.6rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
+  .hu-board{display:inline-flex;gap:5px;justify-content:center}
+  .hu-flap{display:inline-block;min-width:34px;padding:9px 5px;background:#06120c;border:1px solid #173a26;border-radius:7px;font-size:2.1rem;font-weight:700;line-height:1;box-shadow:inset 0 -3px 6px rgba(0,0,0,.55);animation:huflip .45s ease}
+  .hu-sub{font-size:0.66rem;margin-top:7px;color:var(--dim)}
+  .hu-ok .hu-flap{color:var(--green)}
+  .hu-amber .hu-flap{color:var(--yellow);border-color:#5a4a1e;background:#16120a}
+  .hu-amber .hu-sub{color:var(--yellow)}
+  .hu-red .hu-flap{color:var(--red);border-color:#4a1e1e;background:#160a0a}
+  .hu-red .hu-sub{color:var(--red)}
+  @keyframes huflip{0%{transform:rotateX(90deg);opacity:.2}100%{transform:rotateX(0);opacity:1}}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .tile{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:18px 16px;cursor:pointer;transition:.15s;text-align:left;min-height:138px;display:flex;flex-direction:column;justify-content:space-between}
   .tile:active{transform:scale(.97);border-color:var(--gold)}
@@ -337,6 +348,7 @@
             <a onclick="cxLogout()" style="color:var(--gold);font-size:.78rem;cursor:pointer;text-decoration:underline">Sair</a>
           </div>
         </div>
+        <div id="home-usage"></div>
         <div class="sqgrid">
           <button class="sqb rdy" onclick="go('conferir')"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4h6v3H9z"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="14" y2="15"/></svg><span class="sl">Escala</span><span class="ss">conformidade / fadiga</span><span class="sbar"></span></button>
           <button class="sqb rdy" onclick="go('consultar')"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-4 4z"/><circle cx="9" cy="10" r=".7" fill="currentColor" stroke="none"/><circle cx="12.5" cy="10" r=".7" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r=".7" fill="currentColor" stroke="none"/></svg><span class="sl">Perguntar</span><span class="ss">jurídico</span><span class="sbar"></span></button>
@@ -569,7 +581,26 @@ function cxShowLogin(){ document.getElementById('auth-signup').style.display='no
 function cxGateShow(){ document.getElementById('authgate').style.display='flex'; }
 function cxGateHide(){ document.getElementById('authgate').style.display='none'; }
 function cxAnoMes(){ const s=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); return s.slice(0,7); }
-function cxSetUsage(usadas,limite){ const el=document.getElementById('cx-usage'); if(!el) return; if(CX_PLANO==='admin'||CX_PLANO==='tester'){ el.textContent=usadas+' perguntas neste mês · acesso liberado'; } else { el.textContent=usadas+'/'+(limite||10)+' perguntas neste mês'; } }
+function cxSetUsage(usadas,limite){
+  const el=document.getElementById('cx-usage');
+  if(el){ if(CX_PLANO==='admin'||CX_PLANO==='tester'){ el.textContent=usadas+' perguntas neste mês · acesso liberado'; } else { el.textContent=usadas+'/'+(limite||10)+' perguntas neste mês'; } }
+  homeUsage(usadas,limite);
+}
+function homeUsage(usadas,limite){
+  var el=document.getElementById('home-usage'); if(!el) return;
+  limite=limite||10; usadas=usadas||0;
+  if(CX_PLANO==='admin'||CX_PLANO==='tester'){
+    el.innerHTML='<div class="hu-lbl">Seu consumo</div><div class="hu-wrap hu-ok"><div class="hu-board"><span class="hu-flap">∞</span></div><div class="hu-sub">acesso liberado · '+usadas+' este mês</div></div>';
+    return;
+  }
+  var rest=Math.max(0,limite-usadas);
+  var cls=rest<=3?'hu-red':(rest<=5?'hu-amber':'hu-ok');
+  var digits=String(rest).split('').map(function(d){return '<span class="hu-flap">'+d+'</span>';}).join('');
+  var sub = rest===0 ? ('limite atingido · usou '+usadas+'/'+limite+' · renova mês que vem')
+          : (rest<=3 ? ('só restam '+rest+' · usou '+usadas+'/'+limite)
+          : ('usou '+usadas+'/'+limite+' este mês'));
+  el.innerHTML='<div class="hu-lbl">Perguntas restantes</div><div class="hu-wrap '+cls+'"><div class="hu-board">'+digits+'</div><div class="hu-sub">'+sub+'</div></div>';
+}
 function cxApplyProfile(p){
   if(!p) return;
   const e=document.getElementById('ctx_empresa'), f=document.getElementById('ctx_funcao');
