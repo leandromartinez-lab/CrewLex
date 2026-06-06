@@ -112,6 +112,14 @@
   .mt-sum{font-size:0.96rem;color:var(--ink);font-weight:600;text-align:right;line-height:1.3}
   .mt-wx{font-size:1.08rem;margin-right:3px}
   .memo-card{background:linear-gradient(180deg,rgba(212,164,55,.09),rgba(212,164,55,.02));border:1px solid var(--gold);border-radius:12px;padding:13px 14px;margin-bottom:16px}
+  .rota-box{background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:12px}
+  .rota-hint{font-size:0.7rem;color:var(--dim);line-height:1.5;margin-bottom:11px}
+  .rota-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .rota-in{flex:1;min-width:0;background:#06120c;border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:'B612 Mono',monospace;font-size:0.85rem;padding:10px 11px;text-transform:uppercase}
+  .rota-in::placeholder{color:var(--dim);text-transform:none}
+  .rota-arr{color:var(--gold);font-size:1rem;flex:0 0 auto}
+  .rota-date{width:100%;text-transform:none;margin-bottom:10px}
+  .rota-go{width:100%;background:var(--gold);color:#06120c;border:0;border-radius:8px;font-family:'B612 Mono',monospace;font-weight:700;font-size:0.82rem;padding:11px;cursor:pointer}
   .memo-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:8px}
   .memo-tag{font-size:0.6rem;letter-spacing:1.2px;font-weight:700;color:var(--gold);text-transform:uppercase}
   .memo-status{font-size:0.62rem;font-weight:600;padding:3px 9px;border-radius:20px;line-height:1.45;max-width:62%;text-align:right}
@@ -525,6 +533,19 @@
           </div>
         </div>
         <div class="ph" style="margin-bottom:10px">Voltar pra casa · painéis de voo</div>
+
+        <div class="rota-box">
+          <div class="rota-hint">Veja <b>quais voos e companhias</b> operam um trecho num <b>dia específico</b> (inclusive datas futuras). Abre no Google Flights, direto da fonte.</div>
+          <div class="rota-row">
+            <input id="rotaOri" class="rota-in" type="text" maxlength="4" placeholder="Origem (ex.: CGH)" autocapitalize="characters" autocomplete="off">
+            <span class="rota-arr">→</span>
+            <input id="rotaDst" class="rota-in" type="text" maxlength="4" placeholder="Destino (ex.: CWB)" autocapitalize="characters" autocomplete="off">
+          </div>
+          <input id="rotaData" class="rota-in rota-date" type="date">
+          <button class="rota-go" onclick="buscarRota()">✈ Ver voos do trecho ›</button>
+          <div class="disc" style="margin-top:8px">O Google Flights mostra os voos e companhias do dia escolhido. Disponibilidade de assento <b>non-rev</b> não aparece aqui — para isso, use o Passe Livre da empresa mais abaixo.</div>
+        </div>
+
         <div class="listitem" onclick="ext('https://www.gru.com.br/pt/passageiro/voos/chegadas-e-partidas')" style="cursor:pointer"><div class="li-t">🛬 GRU · Guarulhos — chegadas e partidas ›</div><div class="li-d">Painel oficial do GRU Airport, status em tempo real</div></div>
         <div class="listitem" onclick="ext('https://www.aenabrasil.com.br/pt/aeroportos/aeroporto-de-congonhas/informacoes-de-voos.html')" style="cursor:pointer"><div class="li-t">🛬 CGH · Congonhas — informações de voos ›</div><div class="li-d">Painel oficial Aena Brasil, status em tempo real</div></div>
         <div class="disc" style="margin-top:8px">Os painéis abrem nos sites oficiais (GRU Airport e Aena). Portão e status saem direto da fonte do aeroporto. No futuro, com integração de dados, esses voos poderão aparecer dentro do próprio CrewLex.</div>
@@ -822,7 +843,7 @@ function go(v){
   if(v==='pernoite')pnInit();
   if(v==='conversao')cvInit();
   if(v==='meteo')mtInit();
-  if(v==='passe')passeMemoStatus();
+  if(v==='passe'){passeMemoStatus();rotaInitData();}
 }
 function goFerr(anchorId){ go('ferramentas'); setTimeout(function(){ var el=document.getElementById(anchorId); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'}); },80); }
 function emBreve(nome,desc){ var b=document.getElementById('eb-body'); if(b) b.innerHTML='<div class="ph">'+nome+'</div><div style="color:var(--dim);font-size:0.84rem;line-height:1.6;margin-top:8px">'+desc+'.<br><br>🛠️ Essa ferramenta ainda está em desenvolvimento — em breve disponível aqui no CrewLex.</div>'; TITLES['embreve']=[nome,'em desenvolvimento']; go('embreve'); }
@@ -986,6 +1007,29 @@ function pnOpen(cat){
     url='https://www.google.com/maps/search/'+encodeURIComponent(q+' em '+cidade);
   }
   window.open(url,'_blank');
+}
+
+/* ===== BUSCA DE VOOS POR ROTA + DATA (Google Flights) ===== */
+function buscarRota(){
+  const ori=((document.getElementById('rotaOri')||{}).value||'').trim().toUpperCase();
+  const dst=((document.getElementById('rotaDst')||{}).value||'').trim().toUpperCase();
+  const data=((document.getElementById('rotaData')||{}).value||'').trim();
+  if(!ori||!dst){ alert('Preencha a origem e o destino (código IATA do aeroporto, ex.: CGH e CWB).'); return; }
+  if(ori.length<3||dst.length<3){ alert('Use o código IATA de 3 letras do aeroporto (ex.: CGH, CWB, GRU).'); return; }
+  let q='voos de '+ori+' para '+dst;
+  if(data){
+    const p=data.split('-'); // YYYY-MM-DD
+    if(p.length===3){ q+=' em '+p[2]+'/'+p[1]+'/'+p[0]; }
+  }
+  const url='https://www.google.com/travel/flights?q='+encodeURIComponent(q);
+  window.open(url,'_blank');
+}
+/* pré-preenche a data com amanhã ao abrir o Passe livre */
+function rotaInitData(){
+  const el=document.getElementById('rotaData'); if(!el||el.value) return;
+  const d=new Date(); d.setDate(d.getDate()+1);
+  const mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  el.value=d.getFullYear()+'-'+mm+'-'+dd;
 }
 
 /* ===== RASTREAR AERONAVE (FlightRadar24 / Planespotters) ===== */
