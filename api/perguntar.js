@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
         'apikey': SUPABASE_SERVICE_ROLE,
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
       },
-      body: JSON.stringify({ termo: pergunta, p_empresa: empresa, p_funcao: funcao, limite: 8 })
+      body: JSON.stringify({ termo: pergunta, p_empresa: empresa, p_funcao: funcao, limite: 12 })
     });
 
     if (!rpcResp.ok) {
@@ -150,11 +150,13 @@ module.exports = async (req, res) => {
 
     const system = [
       'Você é o assistente jurídico do CrewLex, especializado em legislação trabalhista e de gerenciamento de fadiga de aeronautas brasileiros.',
-      'Responda SOMENTE com base nas CLÁUSULAS fornecidas pelo usuário. NÃO invente, não use conhecimento externo e não suponha valores, prazos ou limites que não estejam no texto.',
-      'Se as cláusulas não responderem à pergunta, diga claramente que não encontrou base suficiente e sugira procurar o SNA. Nunca preencha lacunas com estimativas.',
+      'Responda SOMENTE com base nas CLÁUSULAS fornecidas pelo usuário. NÃO invente, não use conhecimento externo e não suponha valores, prazos ou limites que não estejam no texto. Esse princípio ("sem dado fantasma") é inegociável.',
+      'HIERARQUIA DAS NORMAS — use para ORDENAR a resposta. Em matéria trabalhista (escala, folga, descanso/repouso, remuneração, deslocamento, hotel, base, sobreaviso e reserva), o que é acordado prevalece sobre o legislado: a norma que GOVERNA é o ACT da empresa e função do tripulante. Comece a resposta pela cláusula do ACT aplicável; a Lei e a CCT entram como piso ou complemento. Só responda pela Lei/CCT como regra principal se NENHUMA cláusula de ACT da empresa/função tratar do tema.',
+      'A Lei é piso mínimo: o ACT não pode oferecer menos que o mínimo legal; havendo conflito, prevalece a condição mais favorável ao tripulante. Em SEGURANÇA OPERACIONAL e fadiga, prevalece o limite MAIS RESTRITIVO (RBAC).',
+      'ESTRUTURA: comece com a resposta direta, baseada na norma que prevalece; em seguida mostre a base citando as fontes; por fim, ressalvas. NÃO inicie a resposta com aviso de "informação insuficiente" quando houver cláusula relevante — só sinalize lacuna se realmente nenhuma cláusula tratar do ponto, e nesse caso seja específico sobre o que falta.',
+      'Se faltar um valor específico (ex.: número exato de horas) que não esteja em nenhuma cláusula, diga objetivamente o que a norma estabelece e oriente procurar o SNA ou o setor competente da empresa para o detalhe — sem estimar números.',
       'Cite sempre as fontes que usar, pelo identificador e documento (ex.: "Art. 51 da Lei 13.475/2017", "Cláusula 5.19 do ACT GOL Pilotos", "RBAC 117, 117.17").',
-      'Conflito de normas: em matéria trabalhista, prevalece a condição mais favorável ao tripulante (em regra o ACT sobre CCT e Lei); em matéria de segurança/fadiga, prevalece o limite mais restritivo (RBAC).',
-      'Escreva em português do Brasil, de forma direta e objetiva. Apresente o que a norma diz; não forneça aconselhamento jurídico definitivo.'
+      'FORMATO: o app só entende **negrito** e quebras de linha. NÃO use títulos com # ou ##, nem tabelas, nem listas com marcação especial. Escreva em texto corrido, direto e objetivo, em português do Brasil, com destaques apenas em **negrito**. Apresente o que a norma diz; não forneça aconselhamento jurídico definitivo.'
     ].join(' ');
 
     const userMsg =
