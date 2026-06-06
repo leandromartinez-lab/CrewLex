@@ -790,7 +790,7 @@ function mtRenderList(){
 }
 function mtFetch(ic){
   var s=document.getElementById('mts-'+ic);
-  if(typeof CREWLEX_BACKEND==='undefined' || !CREWLEX_BACKEND){ if(s)s.textContent='fonte não ligada'; return; }
+  if(typeof CREWLEX_BACKEND==='undefined'){ if(s)s.textContent='fonte não ligada'; return; }
   fetch(CREWLEX_BACKEND+'/api/metar?icao='+ic).then(function(r){return r.json();}).then(function(j){
     mtStore[ic]=j||{};
     var p=mtParse((j&&j.metar)||''); var ss=document.getElementById('mts-'+ic);
@@ -987,8 +987,40 @@ function runMotor(){
 }
 
 /* ===== CONFERIR (fluxo) ===== */
+var PF_KEY='crewlex_perfil';
+function pfGet(){ try{ return JSON.parse(localStorage.getItem(PF_KEY)||'null')||{}; }catch(e){ return {}; } }
+function pfSave(){
+  var g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  try{ localStorage.setItem(PF_KEY, JSON.stringify({empresa:g('pf-emp'),funcao:g('pf-fun'),baseContratual:g('pf-basec'),baseVirtual:g('pf-basev')})); }catch(e){}
+}
+function pfBaseLabel(){ var p=pfGet(), c=p.baseContratual||'', v=p.baseVirtual||''; if(!c&&!v)return ''; if(v)return v+' (virtual) · vínculo '+(c||'?'); return c+' (contratual)'; }
+function pfPanelHTML(){
+  var p=pfGet(), s=function(v,c){return v===c?' selected':'';};
+  return '<div class="panel"><div class="ph">Seu perfil</div>'
+    +'<div style="font-size:0.66rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Todo tripulante tem uma <b>base contratual</b>. Quem é <b>base virtual</b> mora numa cidade e fica <b>vinculado</b> a uma base contratual (ex.: virtual CWB, vínculo GRU). Fica salvo no aparelho e alimenta as regras de hotel, retorno e descanso <b>(em breve)</b>.</div>'
+    +'<div class="frow">'
+    +'<div><label>Empresa</label><select id="pf-emp" onchange="pfSave()"><option value="GOL"'+s('GOL',p.empresa)+'>GOL</option><option value="LATAM"'+s('LATAM',p.empresa)+'>LATAM</option><option value="AZUL"'+s('AZUL',p.empresa)+'>Azul</option></select></div>'
+    +'<div><label>Função</label><select id="pf-fun" onchange="pfSave()"><option value="piloto"'+s('piloto',p.funcao)+'>Piloto</option><option value="comissario"'+s('comissario',p.funcao)+'>Comissário</option></select></div>'
+    +'</div>'
+    +'<div style="margin-top:2px"><label>Base contratual</label><select id="pf-basec" onchange="pfSave()">'
+    +'<option value="">— escolha —</option>'
+    +'<option value="GRU"'+s('GRU',p.baseContratual)+'>Guarulhos · GRU</option>'
+    +'<option value="CGH"'+s('CGH',p.baseContratual)+'>São Paulo · CGH</option>'
+    +'<option value="BSB"'+s('BSB',p.baseContratual)+'>Brasília · BSB</option>'
+    +'<option value="GIG"'+s('GIG',p.baseContratual)+'>Rio de Janeiro · GIG/SDU</option>'
+    +'<option value="POA"'+s('POA',p.baseContratual)+'>Porto Alegre · POA</option>'
+    +'<option value="FOR"'+s('FOR',p.baseContratual)+'>Fortaleza · FOR</option>'
+    +'</select></div>'
+    +'<div style="margin-top:2px"><label>Base virtual (se for o caso)</label><select id="pf-basev" onchange="pfSave()">'
+    +'<option value=""'+s('',p.baseVirtual)+'>— não sou base virtual —</option>'
+    +'<option value="CWB"'+s('CWB',p.baseVirtual)+'>Curitiba · CWB</option>'
+    +'<option value="FOR"'+s('FOR',p.baseVirtual)+'>Fortaleza · FOR</option>'
+    +'<option value="POA"'+s('POA',p.baseVirtual)+'>Porto Alegre · POA</option>'
+    +'</select></div>'
+    +'</div>';
+}
 function resetConferir(){
-  document.getElementById("cf-stage").innerHTML=`
+  document.getElementById("cf-stage").innerHTML= pfPanelHTML() + `
     <div class="panel"><div class="ph">Enviar escala ou alteração</div>
       <input type="file" id="cf-file" accept="application/pdf,image/*" style="display:none" onchange="cfFile(this)">
       <div class="drop" onclick="cfOpenPicker('escala')"><div class="ic">📄</div><div class="t">Enviar escala mensal (PDF)</div><div class="d">toque para escolher o arquivo</div></div>
