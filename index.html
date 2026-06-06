@@ -1221,6 +1221,69 @@ function fadBarChart(bars){
     +'<text x="9" y="'+yMid.toFixed(1)+'" fill="var(--dim)" font-size="6.5" text-anchor="middle" transform="rotate(-90 9 '+yMid.toFixed(1)+')">ALERTA</text>'
     +ylab+rects+xlab+'</svg>';
 }
+var cfBaseQ=[];
+function askPerguntar(q){
+  var pf=pfGet();
+  go('consultar');
+  var ce=document.getElementById('ctx_empresa'); if(ce && pf.empresa) ce.value=pf.empresa;
+  var cf=document.getElementById('ctx_funcao'); if(cf && pf.funcao) cf.value=pf.funcao;
+  var inp=document.getElementById('inp'); if(inp) inp.value=q;
+  if(typeof ask==='function') ask();
+}
+function baseAssess(js, pf){
+  var bc=(pf.baseContratual||'').toUpperCase(), bv=(pf.baseVirtual||'').toUpperCase();
+  if(!bc && !bv) return [];
+  var home={}; if(bc)home[bc]=1; if(bv)home[bv]=1;
+  var voo=function(j){ return j && (j.atividade==='voo' || j.corte_motores || j.apresentacao); };
+  var flags=[];
+  js.forEach(function(j,i){
+    if(!voo(j)) return;
+    var dest=(j.destino||'').toUpperCase(), orig=(j.origem||'').toUpperCase();
+    var dia=j.data?fmtData(j.data):('jornada '+(i+1));
+    var hora=j.corte_motores?(' às '+j.corte_motores):'';
+    if(bv && dest && dest===bc){
+      flags.push({cl:'warn', t:'<b>'+dia+'</b> · encerrou em <b>'+dest+'</b> (sua base contratual)'+hora+'. Você é base virtual ('+bv+'): há regra de <b>hotel × retorno</b> — confira a cláusula.',
+        q:'Sou base virtual '+bv+' vinculado à base contratual '+bc+'. Encerrei a jornada em '+bc+hora+'. Tenho direito a hotel ou devo retornar para '+bv+'? O que diz o ACT/CCT?'});
+    } else if(dest && !home[dest]){
+      flags.push({cl:'warn', t:'<b>'+dia+'</b> · encerrou em <b>'+dest+'</b>, fora da sua base'+hora+'. Verifique pernoite/hotel e o descanso devido.',
+        q:'Encerrei a jornada em '+dest+', fora da minha base ('+(bv||bc)+')'+hora+'. Que regras de pernoite, hotel e descanso se aplicam pelo ACT/CCT?'});
+    }
+    if(orig && !home[orig]){
+      flags.push({cl:'warn', t:'<b>'+dia+'</b> · iniciou em <b>'+orig+'</b>, que não é a sua base. Se foi deslocamento por conta própria, garanta o descanso devido.',
+        q:'Assumi voo iniciando em '+orig+', que não é a minha base ('+(bv||bc)+'). Posso assumir voo em outra base por conta própria e que descanso preciso ter pelo ACT/CCT?'});
+    }
+    if(bv && dest && dest!==bv){
+      for(var k=i+1;k<js.length;k++){
+        if(!voo(js[k])) continue;
+        var no=(js[k].origem||'').toUpperCase();
+        if(no===bv){
+          flags.push({cl:'warn', t:'<b>'+dia+' → '+(js[k].data?fmtData(js[k].data):'')+'</b> · encerrou em '+dest+' e assume em <b>'+bv+'</b> (base virtual). Há regra de <b>descanso entre bases</b> — confira no CCT.',
+            q:'Encerrei jornada em '+dest+' e vou assumir a próxima em '+bv+' (minha base virtual). Que descanso a CCT exige para assumir voo no dia seguinte na base virtual depois de chegar de outra base?'});
+        }
+        break;
+      }
+    }
+  });
+  return flags;
+}
+function baseBlockHTML(js){
+  var pf=pfGet();
+  if(!pf.baseContratual && !pf.baseVirtual){
+    return '<div class="ph" style="margin:16px 0 8px">Bases · hotel e deslocamento</div><div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Defina sua <b>base</b> no perfil (topo da tela de Escala) para o CrewLex apontar as regras de hotel, retorno e descanso entre bases.</div>';
+  }
+  cfBaseQ=[];
+  var flags=baseAssess(js, pf);
+  var head='<div class="ph" style="margin:16px 0 8px">Bases · hotel e deslocamento</div>';
+  if(!flags.length){
+    return head+'<div class="confnote">Nenhuma situação de base detectada no que foi lido. As regras vêm do ACT/CCT da sua empresa e função.</div>';
+  }
+  var body=flags.map(function(f){
+    var idx=cfBaseQ.push(f.q)-1;
+    return '<div class="card '+f.cl+'"><div class="dt">'+f.t+'</div>'
+      +'<div class="btns" style="margin-top:8px"><button class="btn" onclick="askPerguntar(cfBaseQ['+idx+'])">Perguntar (cita a cláusula)</button></div></div>';
+  }).join('');
+  return head+body+'<div class="disc">O CrewLex <b>detecta a situação</b>; a <b>regra</b> sai do ACT/CCT da sua empresa/função (toque em Perguntar). Não cravamos limites de memória.</div>';
+}
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
   if(err){
@@ -1278,6 +1341,7 @@ function cfRenderResumo(res, err){
     +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
     +chartBlock
     +rows
+    +baseBlockHTML(js)
     +'<div class="btns" style="margin-top:12px"><button class="btn ghost" onclick="resetConferir()">Enviar outra escala</button></div></div>';
 }
 
