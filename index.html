@@ -1484,7 +1484,7 @@ function cfRenderResumo(res, err){
       const horario = (apT&&coT) ? (apT+" → "+coT) : '<span style="color:var(--yellow)">horário não lido na escala</span>';
       const durBadge = fp ? '<span style="color:var(--gold);font-size:0.82rem">'+fp.dur+'</span>' : '';
       const cls = fp ? (fp.lvl==='g'?'ok':fp.lvl==='y'?'warn':'bad') : 'dim';
-      const fadBadge = fp ? ('<span style="'+badgeStyle(cls)+'">fadiga '+FADTXT[fp.lvl]+' ('+fp.minA+')</span>')
+      const fadBadge = fp ? ('<span style="'+badgeStyle(cls)+'">fadiga '+FADTXT[fp.lvl]+' · alerta '+fp.minA+'/100</span>')
                           : ('<span style="'+badgeStyle('dim')+'">fadiga: sem horário lido</span>');
       rows+='<div class="card" style="cursor:pointer" onclick="cfPickJornada('+i+')">'
         +'<div class="top"><span class="nm">'+dataT+' · voo</span>'+durBadge+'</div>'
@@ -1510,20 +1510,81 @@ let cfWantFad=false;
 const FADCOL={g:'var(--green)',y:'var(--yellow)',r:'var(--red)'};
 const FADNAME={g:'baixo risco',y:'atenção',r:'alto risco'};
 const FAD_HARM=[0.97,0.22,0.07,0.03,0.001];
-function fadCirc(h){const hod=((h%24)+24)%24;let r=0;for(let i=0;i<FAD_HARM.length;i++)r+=FAD_HARM[i]*Math.cos(2*Math.PI*(i+1)*(hod-17)/24);return 9.5*(r-0.25);}
+function fadCirc(h,acro){const Ac=(acro==null?17:acro);const hod=((h%24)+24)%24;let r=0;for(let i=0;i<FAD_HARM.length;i++)r+=FAD_HARM[i]*Math.cos(2*Math.PI*(i+1)*(hod-Ac)/24);return 9.5*(r-0.25);}
 function fadHM(s){if(!s)return null;const p=s.split(":");return (+p[0])+(+p[1])/60;}
 function fadClock(t){const x=((t%24)+24)%24;const H=Math.floor(x),M=Math.round((x-H)*60)%60;return String(H).padStart(2,"0")+":"+String(M).padStart(2,"0");}
 function fadLevel(a){return a>=77.5?'g':(a>=65?'y':'r');}
+/* ===== CONTEXTO DE FADIGA (opt-in · fica só neste aparelho) ===== */
+const FC_KEY='crewlex_fadctx';
+function fcGet(){ try{ return JSON.parse(localStorage.getItem(FC_KEY)||'null')||{}; }catch(e){ return {}; } }
+function fcSaveObj(o){ try{ localStorage.setItem(FC_KEY, JSON.stringify(o)); }catch(e){} }
+function fcActive(){ const c=fcGet(); return (c&&c.ativo&&c.sleep!=null)?c:null; }
+function fcAcro(c){ return (c&&c.crono==='matutino')?15 : ((c&&c.crono==='vespertino')?19 : 17); }
+function fcRerender(){ if(window._fadD&&window._fadHost) renderFadiga(window._fadD, window._fadHost); }
+function fcSaveForm(){
+  const g=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  const onEl=document.getElementById('fc-on'); const on=onEl?onEl.checked:false;
+  const ff=document.getElementById('fc-fields'); if(ff) ff.style.display=on?'block':'none';
+  const wakeStr=g('fc-wake'), sleepN=parseFloat(g('fc-sleep')), n2=parseFloat(g('fc-n2')), n3=parseFloat(g('fc-n3'));
+  const debt=(isFinite(n2)?Math.max(0,8-n2):0)+(isFinite(n3)?Math.max(0,8-n3):0);
+  fcSaveObj({ ativo:on, wakeStr:wakeStr||null, wake:(wakeStr?fadHM(wakeStr):null), sleep:isFinite(sleepN)?sleepN:null, n2:isFinite(n2)?n2:null, n3:isFinite(n3)?n3:null, debt:debt, crono:g('fc-crono')||'intermediario', idade:g('fc-idade')||null, sexo:g('fc-sexo')||null, exe:g('fc-exe')||null });
+  fcRerender();
+}
+function fcClear(){ fcSaveObj({ativo:false}); fcRerender(); }
+function fcCardHTML(){
+  const c=fcGet(); const on=!!c.ativo;
+  const v=function(x){return (x==null?'':x);};
+  const inS='background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--gold);padding:2px 4px';
+  const sopt=function(id,val,opts){ return '<select id="'+id+'" style="'+inS+'">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(val===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'; };
+  let h='<div class="confnote" style="border-color:var(--line);color:var(--ink);text-align:left">'
+    +'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;text-transform:none;letter-spacing:0;margin:0">'
+    +'<input type="checkbox" id="fc-on"'+(on?' checked':'')+' onchange="fcSaveForm()" style="margin-top:3px">'
+    +'<span><b>Contextualizar minha fadiga</b> (opcional). Ligado, o cálculo usa seu <b>sono real</b> e seu <b>cronotipo</b> em vez de supor uma noite normal. Fica <b>só neste aparelho</b> — nada é enviado.</span></label>'
+    +'<div id="fc-fields" style="display:'+(on?'block':'none')+';margin-top:10px;font-size:0.78rem">';
+  h+='<div style="color:var(--gold);font-size:0.7rem;margin-bottom:4px">Última noite (antes desta jornada)</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+    +'<span>Acordei às <input type="time" id="fc-wake" value="'+v(c.wakeStr)+'" style="'+inS+'"></span>'
+    +'<span>Dormi <input type="number" id="fc-sleep" min="0" max="14" step="0.5" value="'+v(c.sleep)+'" style="width:58px;'+inS+'"> h</span>'
+    +'</div>';
+  h+='<div style="color:var(--gold);font-size:0.7rem;margin-bottom:4px">2 noites anteriores (horas dormidas)</div>'
+    +'<div style="display:flex;gap:10px;margin-bottom:8px">'
+    +'<span>−2: <input type="number" id="fc-n2" min="0" max="14" step="0.5" value="'+v(c.n2)+'" style="width:58px;'+inS+'"> h</span>'
+    +'<span>−3: <input type="number" id="fc-n3" min="0" max="14" step="0.5" value="'+v(c.n3)+'" style="width:58px;'+inS+'"> h</span>'
+    +'</div>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span>Cronotipo:</span>'
+    +sopt('fc-crono', c.crono||'intermediario', [['matutino','Matutino (manhã)'],['intermediario','Intermediário'],['vespertino','Vespertino (noite)']])+'</div>';
+  h+='<div style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px">'
+    +'<div style="color:var(--dim);font-size:0.66rem;margin-bottom:6px">Os campos abaixo <b>não mudam o número</b> — ficam com você e, no futuro, para <b>estudo agregado e anônimo</b> do sindicato.</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+    +'<span>Idade <input type="number" id="fc-idade" min="18" max="80" value="'+v(c.idade)+'" style="width:54px;'+inS+'"></span>'
+    +'<span>Sexo '+sopt('fc-sexo', c.sexo||'', [['','—'],['F','F'],['M','M'],['NA','Prefiro não dizer']])+'</span>'
+    +'<span>Exercício/sem '+sopt('fc-exe', c.exe||'', [['','—'],['0','0'],['1-2','1–2'],['3-4','3–4'],['5+','5+']])+'</span>'
+    +'</div></div>';
+  h+='<div class="btns" style="margin-top:12px"><button class="btn" onclick="fcSaveForm()">Salvar e recalcular</button><button class="btn ghost" onclick="fcClear()">Limpar</button></div>';
+  h+='</div></div>';
+  return h;
+}
+
 function fadAssess(d){
   let apres=fadHM(d.apres),corte=fadHM(d.corte);
   if(apres==null||corte==null||!isFinite(apres)||!isFinite(corte))return null;
   if(corte<apres)corte+=24;                 // jornada vira meia-noite
-  const wake=Math.min(7.5,apres-1.0);        // sono noturno 23:30–07:30; acorda 1h antes se cedo
-  const sleep=Math.max(0,Math.min(8,wake-(-0.5)));
-  const Swake=Math.max(30,Math.min(100,40+sleep*7.5));
-  const A=t=>{const S=Swake*Math.exp(-Math.max(0,t-wake)/40);let inr=0;const tw=t-wake;if(tw>=0&&tw<1.5)inr=-12*Math.exp(-tw/0.5);return Math.max(0,Math.min(100,S+fadCirc(t)+inr));};
+  const ctx=fcActive();                      // contexto opcional (só no aparelho)
+  const acro=ctx?fcAcro(ctx):17;
+  let wake,sleep;
+  if(ctx){
+    wake=(ctx.wake!=null)?ctx.wake:Math.min(7.5,apres-1.0);
+    if(wake>apres)wake-=24;
+    sleep=Math.max(0,Math.min(12,ctx.sleep));
+  }else{
+    wake=Math.min(7.5,apres-1.0);            // sono noturno 23:30–07:30; acorda 1h antes se cedo
+    sleep=Math.max(0,Math.min(8,wake-(-0.5)));
+  }
+  let Swake=Math.max(30,Math.min(100,40+sleep*7.5));
+  if(ctx&&ctx.debt)Swake=Math.max(30,Swake-Math.min(15,ctx.debt*2));
+  const A=t=>{const S=Swake*Math.exp(-Math.max(0,t-wake)/40);let inr=0;const tw=t-wake;if(tw>=0&&tw<1.5)inr=-12*Math.exp(-tw/0.5);return Math.max(0,Math.min(100,S+fadCirc(t,acro)+inr));};
   let minA=101,tmin=apres;const samples=[];for(let t=apres;t<=corte+1e-9;t+=0.25){const v=A(t);samples.push({t,a:v});if(v<minA){minA=v;tmin=t;}}
-  return {apres,corte,sleep,aApres:A(apres),aCorte:A(corte),minA:Math.round(minA),tmin,lvl:fadLevel(minA),samples};
+  return {apres,corte,sleep,wake,acro,personalizado:!!ctx,aApres:A(apres),aCorte:A(corte),minA:Math.round(minA),tmin,lvl:fadLevel(minA),samples};
 }
 function fadChart(r){
   const W=300,H=110,padL=6,padR=24,padT=8,padB=16;
@@ -1554,8 +1615,9 @@ function fadChart(r){
     +`</svg>`;
 }
 function renderFadiga(d,host){
+  window._fadD=d; window._fadHost=host;
   const r=fadAssess(d);
-  if(!r){host.innerHTML='<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Falta a <b>apresentação</b> e/ou o <b>corte dos motores</b>. Volte um passo, preencha os dois horários e toque em <b>Conferir agora</b> — aí a curva de alerta aparece aqui.</div>';return;}
+  if(!r){host.innerHTML=fcCardHTML()+'<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Falta a <b>apresentação</b> e/ou o <b>corte dos motores</b>. Volte um passo, preencha os dois horários e toque em <b>Conferir agora</b> — aí a curva de alerta aparece aqui.</div>';return;}
   const dur=r.corte-r.apres, am=((r.apres%24)+24)%24, cm=((r.corte%24)+24)%24;
   let wocl=false;for(let t=r.apres;t<=r.corte;t+=0.25){const x=((t%24)+24)%24;if(x>=2&&x<6){wocl=true;break;}}
   const flags=[];
@@ -1568,12 +1630,14 @@ function renderFadiga(d,host){
   if(d.origin==='sobreaviso')flags.push(['Início após sobreaviso','w']);
   const fh=flags.map(f=>`<span class="fad-flag ${f[1]}">${f[0]}</span>`).join('')||'<span class="fad-flag" style="background:rgba(155,176,196,.1);border-color:var(--line);color:var(--dim)">sem fatores de risco destacados</span>';
   const chart=fadChart(r);
-  host.innerHTML=`
-    <div class="confnote">Estimativa <b>indicativa</b> (modelo de três processos: sono + ritmo circadiano + inércia). Considera <b>uma noite normal de sono</b> antes desta jornada — o acúmulo do mês inteiro entra com a leitura real no backend. Não é FRMS certificado nem mede o seu estado real.</div>
+  const sonoTxt = r.personalizado ? 'Usa <b>o sono que você informou</b> e seu <b>cronotipo</b>' : 'Considera <b>uma noite normal de sono</b> antes desta jornada';
+  const modoBadge = r.personalizado ? '<span style="'+badgeStyle('ok')+'">personalizado</span>' : '<span style="'+badgeStyle('dim')+'">padrão · noite normal</span>';
+  host.innerHTML=fcCardHTML()+`
+    <div class="confnote">Estimativa <b>indicativa</b> (modelo de três processos: sono + ritmo circadiano + inércia). ${sonoTxt} — o acúmulo do mês inteiro entra com a leitura real no backend. Não é FRMS certificado nem mede o seu estado real.</div>
     <div class="fad-big">
       <div><div class="fad-num" style="color:${FADCOL[r.lvl]}">${r.minA}</div><div style="font-size:0.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px">alerta mín. /100</div></div>
       <div style="flex:1">
-        <div style="font-weight:600;color:${FADCOL[r.lvl]}">${FADNAME[r.lvl]}</div>
+        <div style="font-weight:600;color:${FADCOL[r.lvl]}">${FADNAME[r.lvl]} ${modoBadge}</div>
         <div class="fad-bar"><div class="fad-mark" style="left:${r.minA}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:0.52rem;color:var(--dim)"><span>0</span><span>65</span><span>77,5</span><span>100</span></div>
       </div>
