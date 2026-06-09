@@ -6,13 +6,13 @@
 <style>
   :root{--navy:#0e2238;--navy2:#14304d;--line:#21466b;--gold:#d4a437;--ink:#f4f1ea;--dim:#9bb0c4;--green:#6db58a;--yellow:#e8b84a;--red:#e0685f}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html{font-size:130%}
+  html{font-size:150%}
   html,body{height:100%}
   body{background:#06121f;color:var(--ink);font-family:'B612 Mono','JetBrains Mono',ui-monospace,Menlo,monospace;line-height:1.5;display:flex;justify-content:center;-webkit-text-size-adjust:100%}
   /* moldura de celular */
   .phone{width:100%;background:var(--navy);min-height:100vh;min-height:100dvh;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
   @media (min-width:1400px){.phone{max-width:900px;box-shadow:0 0 40px rgba(0,0,0,.5)}}
-  .statusbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:0.8rem;color:var(--dim);flex-shrink:0}
+  .statusbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:1.04rem;color:var(--dim);flex-shrink:0}
   .screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 110px}
   .screen::-webkit-scrollbar{width:0}
 
@@ -34,31 +34,31 @@
 
   /* HOME */
   .hero{background:linear-gradient(135deg,var(--navy2),#10283f);border:1px solid var(--line);border-radius:16px;padding:24px 22px;margin-bottom:18px}
-  .hero .greet{font-size:0.84rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
+  .hero .greet{font-size:1.09rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
   .hero .head{font-size:1.5rem;margin-top:8px;line-height:1.35}
   .hero .head b{color:var(--gold)}
   #home-usage{margin:14px 0 2px;text-align:center}
-  .hu-lbl{font-size:0.6rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
+  .hu-lbl{font-size:0.75rem;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
   .hu-board{display:inline-flex;gap:5px;justify-content:center}
   .hu-flap{display:inline-block;min-width:34px;padding:9px 5px;background:#06120c;border:1px solid #173a26;border-radius:7px;font-size:2.1rem;font-weight:700;line-height:1;box-shadow:inset 0 -3px 6px rgba(0,0,0,.55);animation:huflip .45s ease}
-  .hu-sub{font-size:0.66rem;margin-top:7px;color:var(--dim)}
+  .hu-sub{font-size:0.85rem;margin-top:7px;color:var(--dim)}
   .hu-ok .hu-flap{color:var(--green)}
   .hu-amber .hu-flap{color:var(--yellow);border-color:#5a4a1e;background:#16120a}
   .hu-amber .hu-sub{color:var(--yellow)}
   .hu-red .hu-flap{color:var(--red);border-color:#4a1e1e;background:#160a0a}
   .hu-red .hu-sub{color:var(--red)}
   @keyframes huflip{0%{transform:rotateX(90deg);opacity:.2}100%{transform:rotateX(0);opacity:1}}
-  .termsbox{max-height:150px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:0.66rem;line-height:1.55;color:var(--dim);background:rgba(0,0,0,.15)}
-  .termsbox h4{color:var(--ink);font-size:0.72rem;margin:9px 0 3px}
+  .termsbox{max-height:150px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:0.85rem;line-height:1.55;color:var(--dim);background:rgba(0,0,0,.15)}
+  .termsbox h4{color:var(--ink);font-size:0.88rem;margin:9px 0 3px}
   .termsbox b{color:var(--ink)}
-  .termschk{display:flex;gap:9px;align-items:flex-start;margin-top:11px;font-size:0.72rem;text-transform:none;letter-spacing:0;color:var(--ink);cursor:pointer}
+  .termschk{display:flex;gap:9px;align-items:flex-start;margin-top:11px;font-size:0.88rem;text-transform:none;letter-spacing:0;color:var(--ink);cursor:pointer}
   .termschk input{margin-top:2px;width:18px;height:18px;flex-shrink:0}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .tile{background:var(--navy2);border:1px solid var(--line);border-radius:16px;padding:18px 16px;cursor:pointer;transition:.15s;text-align:left;min-height:138px;display:flex;flex-direction:column;justify-content:space-between}
   .tile:active{transform:scale(.97);border-color:var(--gold)}
   .tile .ic{font-size:2.3rem}
   .tile .tn{font-size:1.16rem;font-weight:600;margin-top:10px}
-  .tile .td{font-size:0.82rem;color:var(--dim);margin-top:5px;line-height:1.4}
+  .tile .td{font-size:0.95rem;color:var(--dim);margin-top:5px;line-height:1.4}
   .tile.wide{grid-column:1/3;flex-direction:row;align-items:center;gap:14px;min-height:auto}
   .tile.wide .ic{font-size:1.8rem}
   .tile.wide .tx{flex:1}
@@ -67,7 +67,7 @@
   .tile.gold .tn,.tile.gold .ic{color:var(--navy)}
   .tile.gold .td{color:rgba(14,34,56,.7)}
 
-  .sectitle{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:8px}
+  .sectitle{font-size:1.04rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin:18px 4px 10px;display:flex;align-items:center;gap:8px}
   .sectitle::before{content:"";width:5px;height:5px;background:var(--gold);border-radius:50%}
   /* ===== botões quadrados (pushbutton cockpit) ===== */
   .sqgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -81,7 +81,7 @@
   .sqb svg{width:38px;height:38px;stroke:var(--ink);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .sqb .sl{font-weight:700;letter-spacing:1.5px;font-size:1.12rem;text-transform:uppercase;color:var(--ink);text-align:center;line-height:1.05}
   .sqb.soon .sl{color:#cdd9e6}
-  .sqb .ss{font-size:0.64rem;letter-spacing:.8px;color:var(--dim);text-transform:uppercase;margin-top:-2px}
+  .sqb .ss{font-size:0.83rem;letter-spacing:.8px;color:var(--dim);text-transform:uppercase;margin-top:-2px}
   .sqb .sbar{position:absolute;bottom:11px;left:16px;right:16px;height:12px;border-radius:3px;background-image:radial-gradient(circle,currentColor 1.5px,transparent 2.3px);background-size:9px 7px;background-position:center}
   .sqb.rdy .sbar{filter:drop-shadow(0 0 3px rgba(109,181,138,.8))}
   .sqb.soon .sbar{opacity:.9}
@@ -101,11 +101,11 @@
   .cv-row.dim{color:var(--dim);justify-content:center;font-size:0.8rem}
   .cv-u{color:var(--dim);font-size:0.95rem;text-transform:uppercase;letter-spacing:.5px}
   .cv-v{color:var(--ink);font-size:1.3rem;font-weight:700}
-  .cv-note{font-size:0.62rem;color:var(--dim);margin-top:10px;line-height:1.5}
+  .cv-note{font-size:1.04rem;color:var(--dim);margin-top:10px;line-height:1.5}
   /* ===== meteo / FMC ===== */
   .mt-inrow{display:grid;grid-template-columns:1fr auto;gap:10px}
   .mt-icao{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:14px;font-size:1.4rem;font-family:inherit;font-weight:700;letter-spacing:3px;width:100%}
-  .mt-hint{font-size:0.66rem;color:var(--dim);margin-top:10px;line-height:1.5}
+  .mt-hint{font-size:0.85rem;color:var(--dim);margin-top:10px;line-height:1.5}
   .mt-item{background:var(--navy2);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
   .mt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer}
   .mt-ic{font-weight:700;font-size:1.15rem;letter-spacing:1px;color:var(--ink);flex-shrink:0}
@@ -113,19 +113,19 @@
   .mt-wx{font-size:1.08rem;margin-right:3px}
   .memo-card{background:linear-gradient(180deg,rgba(212,164,55,.09),rgba(212,164,55,.02));border:1px solid var(--gold);border-radius:12px;padding:13px 14px;margin-bottom:16px}
   .rota-box{background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:12px}
-  .rota-hint{font-size:0.7rem;color:var(--dim);line-height:1.5;margin-bottom:11px}
+  .rota-hint{font-size:0.9rem;color:var(--dim);line-height:1.5;margin-bottom:11px}
   .rota-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
   .rota-in{flex:1;min-width:0;background:#06120c;border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:'B612 Mono',monospace;font-size:0.85rem;padding:10px 11px;text-transform:uppercase}
   .rota-in::placeholder{color:var(--dim);text-transform:none}
   .rota-arr{color:var(--gold);font-size:1rem;flex:0 0 auto}
-  .rota-go{width:100%;background:var(--gold);color:#06120c;border:0;border-radius:8px;font-family:'B612 Mono',monospace;font-weight:700;font-size:0.82rem;padding:11px;cursor:pointer}
+  .rota-go{width:100%;background:var(--gold);color:#06120c;border:0;border-radius:8px;font-family:'B612 Mono',monospace;font-weight:700;font-size:1.06rem;padding:11px;cursor:pointer}
   .memo-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-  .memo-tag{font-size:0.6rem;letter-spacing:1.2px;font-weight:700;color:var(--gold);text-transform:uppercase}
-  .memo-status{font-size:0.62rem;font-weight:600;padding:3px 9px;border-radius:20px;line-height:1.45;max-width:62%;text-align:right}
+  .memo-tag{font-size:0.78rem;letter-spacing:1.2px;font-weight:700;color:var(--gold);text-transform:uppercase}
+  .memo-status{font-size:1.04rem;font-weight:600;padding:3px 9px;border-radius:20px;line-height:1.45;max-width:62%;text-align:right}
   .memo-status.ok{color:var(--green);background:rgba(109,181,138,.12);border:1px solid rgba(109,181,138,.35)}
   .memo-status.warn{color:var(--yellow);background:rgba(232,184,74,.10);border:1px solid rgba(232,184,74,.45)}
   .memo-h{font-size:0.98rem;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:5px}
-  .memo-sub{font-size:0.7rem;color:var(--dim);line-height:1.5;margin-bottom:11px}
+  .memo-sub{font-size:0.9rem;color:var(--dim);line-height:1.5;margin-bottom:11px}
   .memo-rules{display:flex;flex-direction:column;gap:8px;margin-bottom:11px}
   .memo-r{font-size:0.77rem;color:var(--ink);line-height:1.45;padding-left:15px;position:relative}
   .memo-r:before{content:"\25B8";position:absolute;left:0;color:var(--gold)}
@@ -136,20 +136,20 @@
   .mt-body{display:none;padding:0 14px 14px}
   .mt-item.open .mt-body{display:block}
   .mt-rep{margin-bottom:14px}
-  .mt-lbl{font-size:0.62rem;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  .mt-lbl{font-size:1.04rem;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
   .fmc{font-family:'B612 Mono',ui-monospace,monospace;color:#7fe0a0;background:#06120c;border:1px solid #14402a;border-radius:8px;padding:13px;font-size:0.86rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;letter-spacing:.3px;margin:0;text-shadow:0 0 6px rgba(127,224,160,.25)}
   @media print{ .topbar,.tabbar,.statusbar,.btns,.disc{display:none!important} .phone{height:auto!important;min-height:0!important} body,.phone,.screen{background:#fff!important} .fmc{color:#000!important;background:#fff!important;border-color:#999!important;text-shadow:none!important} .mt-lbl{color:#000!important} }
 
   /* botão padrão */
-  .btn{background:var(--gold);color:var(--navy);border:none;font-family:inherit;font-weight:600;font-size:0.84rem;padding:12px 18px;border-radius:10px;cursor:pointer;width:100%;letter-spacing:0.3px}
+  .btn{background:var(--gold);color:var(--navy);border:none;font-family:inherit;font-weight:600;font-size:1.09rem;padding:12px 18px;border-radius:10px;cursor:pointer;width:100%;letter-spacing:0.3px}
   .btn:disabled{opacity:.35}
   .btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
   .btns{display:flex;gap:10px;margin-top:8px}
 
   .panel{background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:13px}
-  .ph{font-size:0.64rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+  .ph{font-size:0.83rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);margin-bottom:11px;display:flex;align-items:center;gap:7px}
   .ph::before{content:"";width:5px;height:5px;background:var(--gold);border-radius:50%}
-  label{display:block;font-size:0.62rem;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+  label{display:block;font-size:1.04rem;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
   input,select{width:100%;background:var(--navy);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:0.9rem;padding:10px;border-radius:8px}
   input:focus,select:focus{outline:none;border-color:var(--gold)}
   .frow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
@@ -159,23 +159,23 @@
   .drop:active{border-color:var(--gold)}
   .drop .ic{font-size:2rem;margin-bottom:7px}
   .drop .t{font-size:0.9rem} .drop .d{font-size:0.68rem;color:var(--dim);margin-top:3px}
-  .or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:0.66rem;margin:13px 0}
+  .or{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:0.85rem;margin:13px 0}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
   .choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .choice button{background:var(--navy);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:0.74rem;padding:13px;border-radius:10px;cursor:pointer;line-height:1.4}
+  .choice button{background:var(--navy);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:0.96rem;padding:13px;border-radius:10px;cursor:pointer;line-height:1.4}
   .choice button:active{border-color:var(--gold)}
-  .lgpd{font-size:0.66rem;color:var(--dim);margin-top:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+  .lgpd{font-size:0.85rem;color:var(--dim);margin-top:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
   .lgpd input{margin-top:3px;width:auto}
   .lgpd b{color:var(--ink)}
 
-  .scan{position:relative;background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:0.72rem;color:var(--dim);overflow:hidden;min-height:120px}
+  .scan{position:relative;background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:16px;font-size:0.93rem;color:var(--dim);overflow:hidden;min-height:120px}
   .scanline{position:absolute;left:0;right:0;height:2px;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:scanmove 1.4s ease-in-out infinite}
   @keyframes scanmove{0%{top:8%}50%{top:88%}100%{top:8%}}
   .scan .ln{opacity:0;animation:appear .4s forwards;margin-bottom:3px}
   .scan .ln:nth-child(2){animation-delay:.3s}.scan .ln:nth-child(3){animation-delay:.6s}
   .scan .ln:nth-child(4){animation-delay:.9s}.scan .ln:nth-child(5){animation-delay:1.2s}
   @keyframes appear{to{opacity:1}}
-  .confnote{font-size:0.7rem;color:var(--yellow);margin-bottom:11px;line-height:1.5}
+  .confnote{font-size:0.9rem;color:var(--yellow);margin-bottom:11px;line-height:1.5}
   .extracted{border-left:3px solid var(--yellow);padding-left:11px}
 
   /* HUD + cards laudo */
@@ -188,11 +188,11 @@
   .card.ok{border-left-color:var(--green)}.card.warn{border-left-color:var(--yellow)}.card.bad{border-left-color:var(--red)}
   .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
   .card .nm{font-size:0.85rem;font-weight:600}
-  .card .vd{font-size:0.62rem;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+  .card .vd{font-size:1.04rem;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
   .vd.ok{color:var(--green)}.vd.warn{color:var(--yellow)}.vd.bad{color:var(--red)}
-  .card .dt{font-size:0.74rem;color:var(--dim);margin-top:5px}
+  .card .dt{font-size:0.96rem;color:var(--dim);margin-top:5px}
   .card .dt b{color:var(--ink)}
-  .fund{font-size:0.7rem;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .fund{font-size:0.9rem;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
   .fund .l{color:var(--dim);text-transform:uppercase;font-size:0.56rem;letter-spacing:.5px}
   .fund .s{color:var(--gold)}
   .conf{display:inline-block;font-size:0.54rem;padding:1px 6px;border-radius:3px;margin-left:5px}
@@ -201,15 +201,15 @@
   /* chat consultar */
   .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
   .ctxsel{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-  .ctxsel .ctxlab{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .ctxsel .ctxlab{font-size:1.04rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
   .ctxsel select{background:var(--navy2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:0.78rem;cursor:pointer}
   .ans .tx b{color:var(--gold)}
-  .chip{background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.66rem;padding:7px 11px;border-radius:14px;cursor:pointer}
+  .chip{background:var(--navy2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.85rem;padding:7px 11px;border-radius:14px;cursor:pointer}
   .chip:active{border-color:var(--gold);color:var(--gold)}
   .thread{display:flex;flex-direction:column;gap:11px;margin-bottom:8px}
   .msg{max-width:94%}
   .msg.u{align-self:flex-end}
-  .msg.u .bub{background:var(--gold);color:var(--navy);border-radius:12px 12px 2px 12px;padding:9px 13px;font-size:0.82rem;font-weight:500}
+  .msg.u .bub{background:var(--gold);color:var(--navy);border-radius:12px 12px 2px 12px;padding:9px 13px;font-size:1.06rem;font-weight:500}
   .msg.a{align-self:flex-start;width:100%}
   .ans{background:var(--navy2);border:1px solid var(--line);border-radius:2px 12px 12px 12px;overflow:hidden}
   .ans .vbar{padding:8px 13px;font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;display:flex;justify-content:space-between;align-items:center;border-left:4px solid var(--line)}
@@ -229,10 +229,10 @@
   .empty{text-align:center;color:var(--dim);font-size:0.76rem;padding:20px 12px;line-height:1.6}
   .empty b{color:var(--ink)}
 
-  .disc{font-size:0.6rem;color:var(--dim);margin-top:12px;padding:11px;border:1px dashed var(--line);border-radius:8px;line-height:1.6}
+  .disc{font-size:0.78rem;color:var(--dim);margin-top:12px;padding:11px;border:1px dashed var(--line);border-radius:8px;line-height:1.6}
   .listitem{background:var(--navy2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:9px;font-size:0.78rem}
   .listitem .li-t{font-weight:600;color:var(--gold);margin-bottom:3px}
-  .listitem .li-d{font-size:0.7rem;color:var(--dim);line-height:1.5}
+  .listitem .li-d{font-size:0.9rem;color:var(--dim);line-height:1.5}
 
   /* tabbar */
   .tabbar{position:absolute;bottom:0;left:0;right:0;height:92px;background:#16304d;border-top:2px solid var(--gold);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -6px 18px rgba(0,0,0,.4)}
@@ -250,22 +250,22 @@
   .pl-btn.gol{border-color:#f47216} .pl-btn.gol .pl-co{color:#f47216}
   .pl-btn.latam{border-color:#e60012} .pl-btn.latam .pl-co{color:#ec3a4a}
   .pl-btn.azul{border-color:#00a3e0} .pl-btn.azul .pl-co{color:#00a3e0}
-  .pl-hint{font-size:0.62rem;color:var(--dim);margin-top:9px;line-height:1.7;background:var(--navy);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+  .pl-hint{font-size:1.04rem;color:var(--dim);margin-top:9px;line-height:1.7;background:var(--navy);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
   .pl-hint b{color:var(--ink)}
   .seg{display:flex;gap:6px;margin-bottom:4px}
-  .seg button{flex:1;background:var(--navy);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.74rem;padding:9px 4px;border-radius:8px;cursor:pointer;transition:.12s}
+  .seg button{flex:1;background:var(--navy);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:0.96rem;padding:9px 4px;border-radius:8px;cursor:pointer;transition:.12s}
   .seg button.sel{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:600}
-  .seg-lbl{font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:11px 0 5px}
+  .seg-lbl{font-size:0.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin:11px 0 5px}
   .read-card{background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .read-card .rl{font-size:0.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+  .read-card .rl{font-size:1.04rem;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
   .read-card .rv{font-size:1.05rem;font-weight:600;color:var(--ink)}
   .read-card input{width:108px;text-align:right;font-size:1rem;background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:4px 2px;color:var(--gold)}
   .read-card input:focus{border-bottom-color:var(--gold)}
-  .read-hd{font-size:0.62rem;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+  .read-hd{font-size:1.04rem;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
   .read-hd::before{content:"✓";color:var(--green)}
   /* ===== FADIGA (aba) ===== */
   .lt-tabs{display:flex;gap:8px;margin:2px 0 14px}
-  .lt{flex:1;background:var(--navy2);border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:10px;font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;transition:.15s}
+  .lt{flex:1;background:var(--navy2);border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:10px;font-family:inherit;font-size:1.04rem;font-weight:600;cursor:pointer;transition:.15s}
   .lt:active{transform:scale(.97)}
   .lt.active{border-color:var(--gold);color:var(--gold);background:#10283f}
   .fad-big{display:flex;align-items:center;gap:14px;background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
@@ -277,12 +277,12 @@
   .fad-cell .l{font-size:0.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;line-height:1.3}
   .fad-cell .v{font-size:1.35rem;font-weight:700;margin-top:4px}
   .fad-flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-  .fad-flag{font-size:0.62rem;padding:4px 8px;border-radius:7px;background:rgba(224,104,95,.13);border:1px solid rgba(224,104,95,.4);color:#f0a9a2}
+  .fad-flag{font-size:1.04rem;padding:4px 8px;border-radius:7px;background:rgba(224,104,95,.13);border:1px solid rgba(224,104,95,.4);color:#f0a9a2}
   .fad-flag.w{background:rgba(232,184,74,.12);border-color:rgba(232,184,74,.4);color:#e8cd86}  .pn-cats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
-  .pn-cat{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:14px 12px;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:.15s}
+  .pn-cat{background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:14px 12px;font-family:inherit;font-size:1.06rem;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:.15s}
   .pn-cat:active{transform:scale(.97);border-color:var(--gold)}
   .pn-cat .pe{font-size:1.25rem;line-height:1}
-  .pn-loc{background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;font-size:0.74rem;color:var(--dim);line-height:1.5}
+  .pn-loc{background:var(--navy);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;font-size:0.96rem;color:var(--dim);line-height:1.5}
   .pn-loc b{color:var(--green)}
   .pn-input{width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);border-radius:9px;padding:11px 12px;color:var(--ink);font-family:inherit;font-size:0.85rem;margin-bottom:8px}
   .pn-input:focus{border-color:var(--gold);outline:none}
@@ -420,7 +420,7 @@
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
             <div style="font-size:1.8rem">✉️</div>
             <div><div style="font-size:1.08rem;font-weight:600">Sugestões ou dúvidas</div>
-              <div style="font-size:0.8rem;color:var(--dim);margin-top:3px;line-height:1.4">Sua mensagem vai direto para a equipe do CrewLex.</div></div>
+              <div style="font-size:1.04rem;color:var(--dim);margin-top:3px;line-height:1.4">Sua mensagem vai direto para a equipe do CrewLex.</div></div>
           </div>
           <textarea id="fb-msg" rows="3" placeholder="Escreva sua sugestão, dúvida ou o que achou do app…" style="width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px;font-size:0.92rem;font-family:inherit;resize:vertical"></textarea>
           <button id="fb-btn" onclick="enviarFeedback()" style="width:100%;margin-top:12px;background:var(--gold);color:#1a1300;border:none;border-radius:10px;padding:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Enviar</button>
@@ -487,7 +487,7 @@
       <!-- SOMA DE HORAS -->
       <div class="view" id="v-soma">
         <div class="panel">
-          <div style="font-size:0.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Some ou subtraia tempos em HH:MM (ex.: 4:20 + 3:55). Use sinal de menos para subtrair (ex.: -1:30). Aceita decimal (1.5 = 1:30).</div>
+          <div style="font-size:0.9rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Some ou subtraia tempos em HH:MM (ex.: 4:20 + 3:55). Use sinal de menos para subtrair (ex.: -1:30). Aceita decimal (1.5 = 1:30).</div>
           <div id="hm-rows">
             <div class="frow" style="grid-template-columns:1fr auto;margin-bottom:8px;align-items:center">
               <input class="hm" placeholder="0:00" inputmode="text">
@@ -505,7 +505,7 @@
           <div style="background:var(--navy);border:1px solid var(--gold);border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:0.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px">Total</div>
             <div id="hm-total" style="font-size:1.8rem;font-weight:600;color:var(--gold);margin-top:3px">0:00</div>
-            <div id="hm-dec" style="font-size:0.62rem;color:var(--dim);margin-top:2px"></div>
+            <div id="hm-dec" style="font-size:1.04rem;color:var(--dim);margin-top:2px"></div>
           </div>
         </div>
       </div>
@@ -550,7 +550,7 @@
 
         <div class="ph" style="margin:18px 0 10px">Cadê o meu avião · rastrear aeronave</div>
         <div class="panel">
-          <div style="font-size:0.7rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Digite a <b style="color:var(--ink)">matrícula</b> (ex.: PR-GTA) ou o <b style="color:var(--ink)">número do voo</b> (ex.: G31234) e veja onde a aeronave está agora, o tipo e a posição — direto no FlightRadar24.</div>
+          <div style="font-size:0.9rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Digite a <b style="color:var(--ink)">matrícula</b> (ex.: PR-GTA) ou o <b style="color:var(--ink)">número do voo</b> (ex.: G31234) e veja onde a aeronave está agora, o tipo e a posição — direto no FlightRadar24.</div>
           <input class="pn-input" id="ac-q" placeholder="Matrícula ou número do voo" style="text-transform:uppercase">
           <div class="btns" style="margin-top:2px">
             <button class="btn" onclick="acTrack('reg')">📡 Pela matrícula</button>
@@ -624,7 +624,7 @@
           <div class="pn-loc" id="pn-loc">Toque em “Usar minha localização” ou informe a cidade do pernoite.</div>
           <button class="btn" style="margin-bottom:10px" onclick="pnLocate()">📍 Usar minha localização</button>
           <input class="pn-input" id="pn-cidade" placeholder="Cidade do pernoite (ex.: Recife)">
-          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;color:var(--dim);font-size:0.72rem;margin:2px 0 10px"><input type="checkbox" id="pn-24h" style="width:auto">só lugares abertos 24h</label>
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;color:var(--dim);font-size:0.93rem;margin:2px 0 10px"><input type="checkbox" id="pn-24h" style="width:auto">só lugares abertos 24h</label>
           <div class="pn-cats">
             <button class="pn-cat" onclick="pnOpen('comer')"><span class="pe">🍽️</span>Comer bem</button>
             <button class="pn-cat" onclick="pnOpen('barato')"><span class="pe">💸</span>Comer barato</button>
@@ -844,7 +844,7 @@ function go(v){
   if(v==='passe')passeMemoStatus();
 }
 function goFerr(anchorId){ go('ferramentas'); setTimeout(function(){ var el=document.getElementById(anchorId); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'}); },80); }
-function emBreve(nome,desc){ var b=document.getElementById('eb-body'); if(b) b.innerHTML='<div class="ph">'+nome+'</div><div style="color:var(--dim);font-size:0.84rem;line-height:1.6;margin-top:8px">'+desc+'.<br><br>🛠️ Essa ferramenta ainda está em desenvolvimento — em breve disponível aqui no CrewLex.</div>'; TITLES['embreve']=[nome,'em desenvolvimento']; go('embreve'); }
+function emBreve(nome,desc){ var b=document.getElementById('eb-body'); if(b) b.innerHTML='<div class="ph">'+nome+'</div><div style="color:var(--dim);font-size:1.09rem;line-height:1.6;margin-top:8px">'+desc+'.<br><br>🛠️ Essa ferramenta ainda está em desenvolvimento — em breve disponível aqui no CrewLex.</div>'; TITLES['embreve']=[nome,'em desenvolvimento']; go('embreve'); }
 
 /* ===== CONVERSOR ===== */
 var CONV={
@@ -1100,8 +1100,8 @@ function buildLaudo(d){
         +(dentro?`A Lei permite ampliar em <b>até 60 min</b>, a critério <b>exclusivo do comandante</b>, em um destes casos. Escolha o que se aplica para ter a justificativa pronta:`:`Isso passa dos <b>60 min</b> que o art. 40 permite ampliar — a ampliação cobre <b>no máximo 60 min</b>; o que exceder disso <b>não tem amparo</b> nessa regra. Ainda assim, registre o motivo:`)
         +`<select id="art40-sel" onchange="art40Pick(this)" style="width:100%;margin-top:10px"><option value="">— escolha o motivo —</option><option value="I">I · sem acomodações p/ repouso em escala regular</option><option value="II">II · espera longa fora da base (meteo / manutenção)</option><option value="III">III · imperiosa necessidade (catástrofe / infraestrutura)</option></select>`
         +`<div id="art40-just" style="margin-top:8px"></div>`
-        +`<div style="font-size:0.62rem;color:var(--yellow);margin-top:10px;line-height:1.5">⚠ A hora de ampliação deve considerar o <b>aeroporto de alternativa</b> no planejamento.</div>`
-        +`<div style="font-size:0.62rem;color:var(--dim);margin-top:6px;line-height:1.5">Comunique ao empregador em até <b>24h</b> após a viagem; ele informa a ANAC em <b>15 dias</b> (parágrafo único).</div>`,
+        +`<div style="font-size:1.04rem;color:var(--yellow);margin-top:10px;line-height:1.5">⚠ A hora de ampliação deve considerar o <b>aeroporto de alternativa</b> no planejamento.</div>`
+        +`<div style="font-size:1.04rem;color:var(--dim);margin-top:6px;line-height:1.5">Comunique ao empregador em até <b>24h</b> após a viagem; ele informa a ANAC em <b>15 dias</b> (parágrafo único).</div>`,
       s:"Lei 13.475/2017, art. 40",cf:"alta"});
   }
   }
@@ -1139,7 +1139,7 @@ function renderLaudo(d,host){
 }
 
 var ART40={I:'inexistência, em local de escala regular, de acomodações apropriadas para o repouso da tripulação e dos passageiros',II:'espera demasiadamente longa, fora da base contratual, em local de espera regular intermediária, ocasionada por condições meteorológicas desfavoráveis e trabalho de manutenção não programada',III:'por imperiosa necessidade — catástrofe ou problema de infraestrutura que não configure falha ou falta administrativa da empresa'};
-function art40Pick(s){var o=s.nextElementSibling;if(!o)return;var k=s.value;if(!k){o.innerHTML='';return;}o.innerHTML='<div style="background:var(--navy);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:0.66rem;line-height:1.5;color:var(--ink)"><span style="color:var(--gold);font-weight:600">Justificativa:</span> Jornada ampliada nos termos do art. 40, '+k+', da Lei 13.475/2017 — '+ART40[k]+'.</div>';}
+function art40Pick(s){var o=s.nextElementSibling;if(!o)return;var k=s.value;if(!k){o.innerHTML='';return;}o.innerHTML='<div style="background:var(--navy);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:0.85rem;line-height:1.5;color:var(--ink)"><span style="color:var(--gold);font-weight:600">Justificativa:</span> Jornada ampliada nos termos do art. 40, '+k+', da Lei 13.475/2017 — '+ART40[k]+'.</div>';}
 function runMotor(){
   const d={trip:m_trip.value,origin:m_origin.value,apres:m_apres.value,corte:m_corte.value,pousos:parseInt(m_pousos.value)||1,madrugada:"nao",data:fmtData(m_data.value)};
   renderLaudo(d,document.getElementById("m-out"));
@@ -1157,7 +1157,7 @@ function pfBaseLabel(){ var p=pfGet(), c=p.baseContratual||'', v=p.baseVirtual||
 function pfPanelHTML(){
   var p=pfGet(), s=function(v,c){return v===c?' selected':'';};
   return '<div class="panel"><div class="ph">Seu perfil</div>'
-    +'<div style="font-size:0.66rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Todo tripulante tem uma <b>base contratual</b>. Quem é <b>base virtual</b> mora numa cidade e fica <b>vinculado</b> a uma base contratual (ex.: virtual CWB, vínculo GRU). Fica salvo no aparelho e alimenta as regras de hotel, retorno e descanso <b>(em breve)</b>.</div>'
+    +'<div style="font-size:0.85rem;color:var(--dim);margin-bottom:10px;line-height:1.5">Todo tripulante tem uma <b>base contratual</b>. Quem é <b>base virtual</b> mora numa cidade e fica <b>vinculado</b> a uma base contratual (ex.: virtual CWB, vínculo GRU). Fica salvo no aparelho e alimenta as regras de hotel, retorno e descanso <b>(em breve)</b>.</div>'
     +'<div class="frow">'
     +'<div><label>Empresa</label><select id="pf-emp" onchange="pfSave()"><option value="GOL"'+s('GOL',p.empresa)+'>GOL</option><option value="LATAM"'+s('LATAM',p.empresa)+'>LATAM</option><option value="AZUL"'+s('AZUL',p.empresa)+'>Azul</option></select></div>'
     +'<div><label>Função</label><select id="pf-fun" onchange="pfSave()"><option value="piloto"'+s('piloto',p.funcao)+'>Piloto</option><option value="comissario"'+s('comissario',p.funcao)+'>Comissário</option></select></div>'
@@ -1212,7 +1212,7 @@ function cfFile(input){
     <div style="color:var(--ink);margin-top:3px;word-break:break-all">${f.name}</div>
     <div style="color:var(--dim);font-size:0.66rem">${tam}</div>
     <button class="btn" style="margin-top:10px" onclick="cfPick(cfTipo)">Continuar para conferência</button>
-    <div style="color:var(--dim);font-size:0.62rem;margin-top:8px;line-height:1.5">A IA vai ler seu arquivo e preencher os dados na próxima tela para você conferir e ajustar.</div>
+    <div style="color:var(--dim);font-size:1.04rem;margin-top:8px;line-height:1.5">A IA vai ler seu arquivo e preencher os dados na próxima tela para você conferir e ajustar.</div>
   </div>`;
 }
 function cfPick(tipo){
@@ -1297,7 +1297,7 @@ function jornadaFadPreview(j){
 }
 function badgeFg(c){return c==='ok'?'var(--green)':c==='warn'?'var(--yellow)':c==='bad'?'var(--red)':'var(--dim)';}
 function badgeBg(c){return c==='ok'?'rgba(109,181,138,.13)':c==='warn'?'rgba(232,184,74,.13)':c==='bad'?'rgba(224,104,95,.13)':'rgba(155,176,196,.10)';}
-function badgeStyle(c){return "background:"+badgeBg(c)+";color:"+badgeFg(c)+";border:1px solid "+badgeFg(c)+";border-radius:6px;padding:2px 7px;font-size:0.66rem;display:inline-block";}
+function badgeStyle(c){return "background:"+badgeBg(c)+";color:"+badgeFg(c)+";border:1px solid "+badgeFg(c)+";border-radius:6px;padding:2px 7px;font-size:0.85rem;display:inline-block";}
 function cfManual(){ cfRenderConferencia({}, null); }
 function cfPickJornada(i){
   const js=(window.cfRes&&window.cfRes.jornadas)||[];
@@ -1461,7 +1461,7 @@ function cfRenderResumo(res, err){
     const msg = err.login
       ? "Sua sessão expirou. Faça login e envie a escala de novo."
       : "A leitura automática falhou"+(err.status?(" (HTTP "+err.status+")"):" (sem resposta do servidor)")+(err.detalhe?(" — "+err.detalhe):"")+".";
-    const brutoBox = (!err.login && err.bruto) ? ('<div style="margin-top:10px;font-size:0.7rem;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-word"><b>A IA respondeu (início):</b>\n'+String(err.bruto).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</div>') : '';
+    const brutoBox = (!err.login && err.bruto) ? ('<div style="margin-top:10px;font-size:0.9rem;color:var(--dim);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-word"><b>A IA respondeu (início):</b>\n'+String(err.bruto).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</div>') : '';
     st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
       +'<div class="confnote" style="border-color:var(--red);color:var(--red)">'+msg+'</div>'
       +brutoBox
@@ -1508,7 +1508,7 @@ function cfRenderResumo(res, err){
     }
   });
   const bars=js.map(function(j,i){return {i:i, data:j.data, fp:jornadaFadPreview(j)};}).filter(function(b){return b.fp;});
-  const chartBlock = bars.length>=2 ? ('<div style="font-size:0.62rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas e vermelhas = dias mais cansativos. Eixo: alerta 0–100 (quanto mais alto, melhor).</div>'+fadBarChart(bars)+'<div style="font-size:0.62rem;color:var(--gold);margin:2px 0 4px;line-height:1.5">👆 Toque numa barra (ou numa jornada na lista) para abrir a <b>curva de alerta do dia</b> — mostra quando você fica mais cansado ao longo da jornada.</div>') : '';
+  const chartBlock = bars.length>=2 ? ('<div style="font-size:1.04rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas e vermelhas = dias mais cansativos. Eixo: alerta 0–100 (quanto mais alto, melhor).</div>'+fadBarChart(bars)+'<div style="font-size:1.04rem;color:var(--gold);margin:2px 0 4px;line-height:1.5">👆 Toque numa barra (ou numa jornada na lista) para abrir a <b>curva de alerta do dia</b> — mostra quando você fica mais cansado ao longo da jornada.</div>') : '';
   st.innerHTML='<div class="panel"><div class="ph">Resumo da escala'+emp+fun+'</div>'
     +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
     +chartBlock
@@ -1553,12 +1553,12 @@ function fcCardHTML(){
     +'<input type="checkbox" id="fc-on"'+(on?' checked':'')+' onchange="fcSaveForm()" style="margin-top:3px">'
     +'<span><b>Contextualizar minha fadiga</b> (opcional). Ligado, o cálculo usa seu <b>sono real</b> e seu <b>cronotipo</b> em vez de supor uma noite normal. Fica <b>só neste aparelho</b> — nada é enviado.</span></label>'
     +'<div id="fc-fields" style="display:'+(on?'block':'none')+';margin-top:10px;font-size:0.78rem">';
-  h+='<div style="color:var(--gold);font-size:0.7rem;margin-bottom:4px">Última noite (antes desta jornada)</div>'
+  h+='<div style="color:var(--gold);font-size:0.9rem;margin-bottom:4px">Última noite (antes desta jornada)</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
     +'<span>Acordei às <input type="time" id="fc-wake" value="'+v(c.wakeStr)+'" style="'+inS+'"></span>'
     +'<span>Dormi <input type="number" id="fc-sleep" min="0" max="14" step="0.5" value="'+v(c.sleep)+'" style="width:58px;'+inS+'"> h</span>'
     +'</div>';
-  h+='<div style="color:var(--gold);font-size:0.7rem;margin-bottom:4px">2 noites anteriores (horas dormidas)</div>'
+  h+='<div style="color:var(--gold);font-size:0.9rem;margin-bottom:4px">2 noites anteriores (horas dormidas)</div>'
     +'<div style="display:flex;gap:10px;margin-bottom:8px">'
     +'<span>−2: <input type="number" id="fc-n2" min="0" max="14" step="0.5" value="'+v(c.n2)+'" style="width:58px;'+inS+'"> h</span>'
     +'<span>−3: <input type="number" id="fc-n3" min="0" max="14" step="0.5" value="'+v(c.n3)+'" style="width:58px;'+inS+'"> h</span>'
@@ -1566,7 +1566,7 @@ function fcCardHTML(){
   h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span>Cronotipo:</span>'
     +sopt('fc-crono', c.crono||'intermediario', [['matutino','Matutino (manhã)'],['intermediario','Intermediário'],['vespertino','Vespertino (noite)']])+'</div>';
   h+='<div style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px">'
-    +'<div style="color:var(--dim);font-size:0.66rem;margin-bottom:6px">Os campos abaixo <b>não mudam o número</b> — ficam com você e, no futuro, para <b>estudo agregado e anônimo</b> do sindicato.</div>'
+    +'<div style="color:var(--dim);font-size:0.85rem;margin-bottom:6px">Os campos abaixo <b>não mudam o número</b> — ficam com você e, no futuro, para <b>estudo agregado e anônimo</b> do sindicato.</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
     +'<span>Idade <input type="number" id="fc-idade" min="18" max="80" value="'+v(c.idade)+'" style="width:54px;'+inS+'"></span>'
     +'<span>Sexo '+sopt('fc-sexo', c.sexo||'', [['','—'],['F','F'],['M','M'],['NA','Prefiro não dizer']])+'</span>'
@@ -1654,7 +1654,7 @@ function renderFadiga(d,host){
         <div style="display:flex;justify-content:space-between;font-size:0.52rem;color:var(--dim)"><span>0</span><span>65</span><span>77,5</span><span>100</span></div>
       </div>
     </div>
-    <div style="font-size:0.6rem;color:var(--dim);margin-top:6px">Alerta estimado ao longo da jornada (quanto mais alto, melhor)</div>
+    <div style="font-size:0.78rem;color:var(--dim);margin-top:6px">Alerta estimado ao longo da jornada (quanto mais alto, melhor)</div>
     ${chart}
     <div class="fad-row">
       <div class="fad-cell"><div class="l">Apres. ${fadClock(r.apres)}</div><div class="v" style="color:${FADCOL[fadLevel(r.aApres)]}">${Math.round(r.aApres)}</div></div>
