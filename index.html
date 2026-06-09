@@ -1444,6 +1444,17 @@ function baseBlockHTML(js){
   }).join('');
   return head+body+'<div class="disc">O CrewLex <b>detecta a situação</b>; a <b>regra</b> sai do ACT/CCT da sua empresa/função (toque em Perguntar). Não cravamos limites de memória.</div>';
 }
+function deduplicarJornadas(jornadas){
+  if(!Array.isArray(jornadas)||jornadas.length<=1)return jornadas;
+  const seen={};
+  const dedup=[];
+  jornadas.forEach(function(j){
+    const key=(j.data||'?')+'-'+(j.apresentacao||'?');
+    if(!seen[key]){seen[key]=j;dedup.push(j);}
+  });
+  return dedup;
+}
+
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
   if(err){
@@ -1458,6 +1469,7 @@ function cfRenderResumo(res, err){
     return;
   }
   res=res||{};
+  if(res.jornadas)res.jornadas=deduplicarJornadas(res.jornadas);
   if(res.eh_escala===false){
     st.innerHTML='<div class="panel"><div class="ph">Leitura da escala</div>'
       +'<div class="confnote" style="border-color:var(--yellow);color:var(--yellow)">Isto não parece uma escala de aeronauta. Envie a escala (PDF do mês) ou um print de alteração.</div>'
@@ -1484,7 +1496,7 @@ function cfRenderResumo(res, err){
       const horario = (apT&&coT) ? (apT+" → "+coT) : '<span style="color:var(--yellow)">horário não lido na escala</span>';
       const durBadge = fp ? '<span style="color:var(--gold);font-size:0.82rem">'+fp.dur+'</span>' : '';
       const cls = fp ? (fp.lvl==='g'?'ok':fp.lvl==='y'?'warn':'bad') : 'dim';
-      const fadBadge = fp ? ('<span style="'+badgeStyle(cls)+'">fadiga '+FADTXT[fp.lvl]+' · alerta '+fp.minA+'/100</span>')
+      const fadBadge = fp ? ('<span style="'+badgeStyle(cls)+'">alerta '+fp.minA+'/100 · fadiga '+FADTXT[fp.lvl]+'</span>')
                           : ('<span style="'+badgeStyle('dim')+'">fadiga: sem horário lido</span>');
       rows+='<div class="card" style="cursor:pointer" onclick="cfPickJornada('+i+')">'
         +'<div class="top"><span class="nm">'+dataT+' · voo</span>'+durBadge+'</div>'
