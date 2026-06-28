@@ -39,7 +39,7 @@ function parseEscalaJson(texto) {
   return JSON.parse(limpo); // lança SyntaxError se não for JSON
 }
 
-async function askClaude(model, content) {
+async function askClaude(model, content, maxTokens) {
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -47,7 +47,7 @@ async function askClaude(model, content) {
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json'
     },
-    body: JSON.stringify({ model, max_tokens: 8000, system: getPrompt(), messages: [{ role: 'user', content }] })
+    body: JSON.stringify({ model, max_tokens: maxTokens || 8000, system: getPrompt(), messages: [{ role: 'user', content }] })
   });
   if (!resp.ok) {
     const t = await resp.text();
@@ -57,6 +57,63 @@ async function askClaude(model, content) {
   const data = await resp.json();
   const texto = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
   return parseEscalaJson(texto);
+}
+
+// ===== Leitura em LOTES PARALELOS (eficiência) =====
+// Ler o mês inteiro numa só chamada é lento (gera ~30 dias de JSON de uma vez). Quebramos
+// o texto em lotes e lemos em PARALELO (Promise.all), juntando as jornadas no fim — assim
+// o tempo de parede vira o do lote mais lento (~12-15s) e cabe nos 60s do plano.
+function dividirTexto(texto, alvo) {
+  const linhas = texto.split('\n');
+  if (linhas.length < 10 || texto.length <= alvo) return [texto];
+  const header = linhas.slice(0, 8).join('\n');   // cabeçalho (período/empresa/nome) repetido em cada lote
+  const corpo = linhas.slice(8);
+  const nLotes = Math.min(8, Math.max(2, Math.ceil(texto.length / alvo)));
+  const porLote = Math.ceil(corpo.length / nLotes);
+  const lotes = [];
+  for (let i = 0; i < corpo.length; i += porLote) {
+    lotes.push(header + '\n' + corpo.slice(i, i + porLote).join('\n'));
+  }
+  return lotes;
+}
+function mesclarEscalas(parts) {
+  const out = { eh_escala: false, formato_origem: null, tipo_documento: null, empresa: null, funcao: null, periodo: null, jornadas: [], confianca_geral: 0, campos_ilegiveis: [] };
+  const confs = [];
+  (parts || []).forEach(function (p) {
+    if (!p || typeof p !== 'object') return;
+    if (p.eh_escala) out.eh_escala = true;
+    out.formato_origem = out.formato_origem || p.formato_origem || null;
+    out.tipo_documento = out.tipo_documento || p.tipo_documento || null;
+    out.empresa = out.empresa || p.empresa || null;
+    out.funcao = out.funcao || p.funcao || null;
+    out.periodo = out.periodo || p.periodo || null;
+    if (Array.isArray(p.jornadas)) out.jornadas = out.jornadas.concat(p.jornadas);
+    if (typeof p.confianca_geral === 'number') confs.push(p.confianca_geral);
+    if (Array.isArray(p.campos_ilegiveis)) out.campos_ilegiveis = out.campos_ilegiveis.concat(p.campos_ilegiveis);
+  });
+  const seen = {};
+  out.jornadas = out.jornadas.filter(function (j) {
+    const k = ((j && j.data) || '') + '|' + ((j && j.apresentacao) || '') + '|' + ((j && j.codigo_atividade_original) || '');
+    if (seen[k]) return false; seen[k] = true; return true;
+  });
+  out.confianca_geral = confs.length ? Math.min.apply(null, confs) : 0;
+  if (out.jornadas.length) out.eh_escala = true;
+  return out;
+}
+async function extrairTextoEmLotes(textoPdf, instr) {
+  const LIM = 9000;
+  const texto = textoPdf.slice(0, 120000);
+  const lotes = dividirTexto(texto, LIM);
+  if (lotes.length === 1) {
+    return await askClaude(TEXT_MODEL, [{ type: 'text', text: 'TEXTO DA ESCALA (extraído do PDF):\n\n' + texto + '\n\n' + instr }], 8000);
+  }
+  const calls = lotes.map(function (t) {
+    return askClaude(TEXT_MODEL, [{ type: 'text', text: 'TEXTO (UMA PARTE de uma escala maior — extraído do PDF):\n\n' + t + '\n\n' + instr }], 5000).catch(function () { return null; });
+  });
+  const parts = await Promise.all(calls);
+  const merged = mesclarEscalas(parts);
+  if (!merged.jornadas.length) throw new Error('lotes sem jornadas'); // cai para o caminho de visão
+  return merged;
 }
 
 module.exports = async (req, res) => {
@@ -105,9 +162,7 @@ module.exports = async (req, res) => {
 
       if (textoPdf.length >= 40) {
         try {
-          const json = await askClaude(TEXT_MODEL, [
-            { type: 'text', text: 'TEXTO DA ESCALA (extraído do PDF):\n\n' + textoPdf.slice(0, 60000) + '\n\n' + INSTR_TXT }
-          ]);
+          const json = await extrairTextoEmLotes(textoPdf, INSTR_TXT);
           return res.status(200).json(json); // privacidade: nada é persistido
         } catch (e) {
           // texto não rendeu JSON válido (ou PDF estranho) -> cai para a visão abaixo
