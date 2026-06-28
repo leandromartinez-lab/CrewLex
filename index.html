@@ -1455,6 +1455,34 @@ function deduplicarJornadas(jornadas){
   return dedup;
 }
 
+/* ===== DIÁRIAS (estimativa de alimentação pela escala) =====
+   Valor por refeição principal (almoço/jantar/ceia); café = 25%. Nacional usa o MAIS
+   FAVORÁVEL (hoje a CCT prevalece sobre os ACTs). Fonte: CCT Aviação Regular 2025/2026,
+   cláusula 2.3 (vig. 01/12/2025). Atualizar este valor quando a norma mudar. */
+const DIARIA_NACIONAL = 109.95;
+const DIARIA_CAFE = +(DIARIA_NACIONAL*0.25).toFixed(2);
+const DIARIA_JANELAS = [['cafe',5,8],['ref',11,13],['ref',19,20],['ceia',24,25]];
+function moedaBR(v){ return 'R$ '+(v||0).toFixed(2).replace('.',','); }
+function diariaJornada(j, res){
+  const m=mapJornada(j, res||{});
+  if(!(validHM(m.apres)&&validHM(m.corte))) return null;
+  let A=fadHM(m.apres), C=fadHM(m.corte);
+  if(C<A) C+=24;
+  const fimCeia=C+0.5;
+  function sobrepoe(s,e,ate){ for(let off=0; off<=24; off+=24){ if(Math.max(A,s+off)<Math.min(ate,e+off)) return true; } return false; }
+  let refeicoes=0, cafes=0;
+  DIARIA_JANELAS.forEach(function(w){
+    const tipo=w[0], ate=(tipo==='ceia')?fimCeia:C;
+    if(sobrepoe(w[1],w[2],ate)){ if(tipo==='cafe') cafes++; else refeicoes++; }
+  });
+  const valor = refeicoes*DIARIA_NACIONAL + cafes*DIARIA_CAFE;
+  return {refeicoes:refeicoes, cafes:cafes, valor:valor};
+}
+function diariaMes(js, res){
+  let total=0, n=0;
+  (js||[]).forEach(function(j){ const d=diariaJornada(j,res); if(d){ total+=d.valor; n++; } });
+  return {total:total, n:n};
+}
 function cfRenderResumo(res, err){
   const st=document.getElementById("cf-stage"); if(!st)return;
   if(err){
@@ -1493,6 +1521,7 @@ function cfRenderResumo(res, err){
     if(isVoo){
       const apT=j.apresentacao||null, coT=j.corte_motores||null;
       const fp=jornadaFadPreview(j);
+      const dj=diariaJornada(j,res);
       const horario = (apT&&coT) ? (apT+" → "+coT) : '<span style="color:var(--yellow)">horário não lido na escala</span>';
       const durBadge = fp ? '<span style="color:var(--gold);font-size:0.82rem">'+fp.dur+'</span>' : '';
       const cls = fp ? (fp.lvl==='g'?'ok':fp.lvl==='y'?'warn':'bad') : 'dim';
@@ -1500,7 +1529,7 @@ function cfRenderResumo(res, err){
                           : ('<span style="'+badgeStyle('dim')+'">fadiga: sem horário lido</span>');
       rows+='<div class="card" style="cursor:pointer" onclick="cfPickJornada('+i+')">'
         +'<div class="top"><span class="nm">'+dataT+' · voo</span>'+durBadge+'</div>'
-        +'<div class="dt">'+horario+(j.num_pousos!=null?(' · '+j.num_pousos+' pouso(s)'):'')+'</div>'
+        +'<div class="dt">'+horario+(j.num_pousos!=null?(' · '+j.num_pousos+' pouso(s)'):'')+(dj&&dj.valor>0?(' · <span style="color:var(--gold)">'+moedaBR(dj.valor)+'</span>'):'')+'</div>'
         +'<div class="fund">'+fadBadge+' <span style="color:var(--gold);font-size:0.74rem">→ toque para ver conformidade e fadiga</span></div></div>';
     } else {
       const rotulo = ativ ? ativ : "atividade";
@@ -1509,8 +1538,14 @@ function cfRenderResumo(res, err){
   });
   const bars=js.map(function(j,i){return {i:i, data:j.data, fp:jornadaFadPreview(j)};}).filter(function(b){return b.fp;});
   const chartBlock = bars.length>=2 ? ('<div style="font-size:1.04rem;color:var(--dim);margin:8px 0 2px">Fadiga por jornada do mês — barras baixas e vermelhas = dias mais cansativos. Eixo: alerta 0–100 (quanto mais alto, melhor).</div>'+fadBarChart(bars)+'<div style="font-size:1.04rem;color:var(--gold);margin:2px 0 4px;line-height:1.5">👆 Toque numa barra (ou numa jornada na lista) para abrir a <b>curva de alerta do dia</b> — mostra quando você fica mais cansado ao longo da jornada.</div>') : '';
+  const dm=diariaMes(js, res);
+  const diariaBlock = dm.n>0 ? ('<div class="card" style="border-color:var(--gold)">'
+    +'<div class="top"><span class="nm">Diárias estimadas no mês</span><span style="color:var(--gold);font-weight:700;font-size:1.16rem">'+moedaBR(dm.total)+'</span></div>'
+    +'<div class="dt" style="margin-top:4px">Alimentação estimada de <b>'+dm.n+'</b> jornada(s) de voo · valor nacional mais favorável ('+moedaBR(DIARIA_NACIONAL)+'/refeição, café 25%). Janelas: café 05–08, almoço 11–13, jantar 19–20, ceia 00–01.</div>'
+    +'<div class="dt" style="color:var(--dim);font-size:0.86rem;margin-top:4px">Estimativa pela escala lida — confira no holerite. Não inclui layover/pernoite nem voos internacionais (regra por região). Café não é devido se incluído no hotel. Fonte: CCT 2.3 (vig. 01/12/2025).</div></div>') : '';
   st.innerHTML='<div class="panel"><div class="ph">Resumo da escala'+emp+fun+'</div>'
     +'<div class="confnote">Li <b>'+js.length+'</b> atividade(s) da sua escala. A <b>fadiga</b> já vem calculada. Toque numa jornada de <b>voo</b> para ver a <b>conformidade</b> — lá você confirma tripulação, base e aclimatação.</div>'
+    +diariaBlock
     +chartBlock
     +rows
     +baseBlockHTML(js)
