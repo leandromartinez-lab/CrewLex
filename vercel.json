@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/extrair.js": { "maxDuration": 60 },
+    "api/perguntar.js": { "maxDuration": 30 },
+    "api/metar.js": { "maxDuration": 15 }
+  }
+}
