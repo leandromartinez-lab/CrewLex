@@ -75,7 +75,10 @@ module.exports = async (req, res) => {
     }
 
     // ---- 3) Limite do plano grátis (consome 1, de forma atômica) -------
+    // MODO TESTE DE CAMPO: defina LIMITE_MENSAL = 0 (ou negativo) na Vercel para
+    // liberar consultas ILIMITADAS — não conta nem trava. Reversível: volte a 10.
     let usadas = null, limite = LIMITE_MENSAL;
+    if (LIMITE_MENSAL > 0) {
     try {
       const cResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consumir_pergunta`, {
         method: 'POST',
@@ -105,6 +108,7 @@ module.exports = async (req, res) => {
       }
       // se a checagem falhar (cResp não-ok), seguimos (fail-open) p/ não travar o usuário
     } catch (e) { /* fail-open */ }
+    }
 
     // ---- 4) Buscar cláusulas (RAG) via RPC do Supabase -----------------
     const rpcResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/buscar_clausulas`, {
@@ -157,6 +161,7 @@ module.exports = async (req, res) => {
       'ESTRUTURA: comece com a resposta direta, baseada na norma que prevalece; em seguida mostre a base citando as fontes; por fim, ressalvas. NÃO inicie a resposta com aviso de "informação insuficiente" quando houver cláusula relevante — só sinalize lacuna se realmente nenhuma cláusula tratar do ponto, e nesse caso seja específico sobre o que falta.',
       'PERGUNTAS DE VÁRIAS PARTES: quando a pergunta tiver mais de uma questão (ex.: "isso é legal? e preciso de 12h de descanso entre reserva e voo?"), NÃO abra a resposta com um "Sim" ou "Não" isolado que valha como veredito de tudo — isso engana, porque cada parte pode ter resposta diferente. Responda cada parte separadamente, deixando claro a qual pergunta cada resposta se refere (ex.: começar pelo ponto, depois "Quanto ao descanso..."). Um "Sim"/"Não" só é permitido quando se referir explicitamente a UMA parte identificada, nunca como abertura ambígua do todo.',
       'Se faltar um valor específico (ex.: número exato de horas) que não esteja em nenhuma cláusula, diga objetivamente o que a norma estabelece e oriente procurar o SNA ou o setor competente da empresa para o detalhe — sem estimar números.',
+      'RELEVÂNCIA DAS CLÁUSULAS: as cláusulas chegam por busca textual e podem incluir trechos apenas TANGENCIAIS à pergunta. Use somente as que tratam DIRETAMENTE do ponto perguntado. Se NENHUMA cláusula responder especificamente ao que foi perguntado, diga isso com clareza (ex.: "A base do CrewLex ainda não tem uma cláusula que trate diretamente disso") e oriente procurar o SNA — NÃO monte uma resposta encaixando cláusulas que não falam do tema. NUNCA deduza um limite, prazo, valor ou regra por analogia, semelhança ou raciocínio próprio: ou está escrito na cláusula citada, ou você declara que não consta. É melhor admitir a lacuna do que preencher com suposição.',
       'Cite sempre as fontes que usar, pelo identificador e documento (ex.: "Art. 51 da Lei 13.475/2017", "Cláusula 5.19 do ACT GOL Pilotos", "RBAC 117, 117.17").',
       'FORMATO: o app só entende **negrito** e quebras de linha. NÃO use títulos com # ou ##, nem tabelas, nem listas com marcação especial. Escreva em texto corrido, direto e objetivo, em português do Brasil, com destaques apenas em **negrito**. Apresente o que a norma diz; não forneça aconselhamento jurídico definitivo.'
     ].join(' ');
